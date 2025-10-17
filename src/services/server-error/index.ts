@@ -176,13 +176,16 @@ export class ServerError<C extends ServerErrorCode> {
         reply.error({ ...deps[0], code: "SERVER_ERROR" }).fail();
         break;
       case "METHOD_NOT_ALLOWED":
-        reply.error({
-          ...deps[0],
-          title: "Method Not Allowed",
-          code: "METHOD_NOT_ALLOWED",
-          message: `Method ${deps[0].method} not allowed`,
-          details: `Allowed method is ${deps[0].allowed.join(", ")}`,
-        });
+        reply
+          .error({
+            ...deps[0],
+            title: "Method Not Allowed",
+            code: "METHOD_NOT_ALLOWED",
+            message: `Method ${deps[0].method} not allowed`,
+            details: `Allowed method is ${deps[0].allowed.join(", ")}`,
+          })
+          .setHeader("Allow", deps[0].allowed.join(", "))
+          .fail();
     }
   }
 }
