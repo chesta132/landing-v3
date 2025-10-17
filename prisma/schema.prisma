@@ -1,0 +1,126 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum AdminAuth {
+  CONFIRMATION
+  OTP
+}
+
+enum VerificationType {
+  CONFIRMATION_AUTH
+  OTP_AUTH
+}
+
+enum TechType {
+  BACKEND
+  FRONTEND
+  FULL_STACK
+  DATABASE
+  STATIC
+  UNKNOWN
+}
+
+model Owner {
+  id            String         @id @default(cuid())
+  name          String
+  profile       Profile?
+  admins        Admin[]
+  projects      Project[]
+  verifications Verification[]
+}
+
+model Admin {
+  id         String    @id @default(cuid())
+  email      String    @unique
+  password   String
+  name       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  auth       AdminAuth @default(CONFIRMATION)
+  allowEmail DateTime  @default(now())
+
+  owner   Owner  @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  @@index([ownerId])
+}
+
+model Profile {
+  id        String   @id @default(cuid())
+  bio       String?
+  location  String?
+  avatarUrl String?
+  socials   Social[]
+
+  owner   Owner  @relation(fields: [ownerId], references: [id])
+  ownerId String @unique
+
+  @@index([ownerId])
+}
+
+model Project {
+  id          String    @id @default(cuid())
+  title       String
+  description String
+  repoUrl     String?
+  demoUrl     String?
+  thumbnail   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isRecycled  Boolean   @default(false)
+  deleteAt    DateTime?
+  techStack   Tech[]
+
+  owner   Owner  @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  @@index([ownerId])
+}
+
+model Tech {
+  id         String    @id @default(cuid())
+  name       String
+  type       TechType
+  url        String
+  isRecycled Boolean   @default(false)
+  deleteAt   DateTime?
+
+  project   Project @relation(fields: [projectId], references: [id])
+  projectId String
+
+  @@index([projectId])
+  @@index([type])
+}
+
+model Social {
+  id         String    @id @default(cuid())
+  provider   String
+  url        String
+  isRecycled Boolean   @default(false)
+  deleteAt   DateTime?
+
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String
+
+  @@index([profileId])
+}
+
+model Verification {
+  id      String           @id @default(cuid())
+  type    VerificationType
+  secret  String
+  expires DateTime
+  used    Boolean          @default(false)
+
+  owner   Owner  @relation(fields: [ownerId], references: [id])
+  ownerId String
+
+  @@index([type, used])
+  @@index([expires])
+}
