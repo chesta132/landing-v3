@@ -1,8 +1,7 @@
-import { Admin, Profile, Project, Social, Tech, Owner, Verification, Prisma } from "@prisma/client";
+import { Admin, Profile, Project, Social, Tech, Verification, Prisma } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 
 export type Models = {
-  owner: Owner;
   admin: Admin;
   profile: Profile;
   project: Project;
@@ -14,7 +13,6 @@ export type Models = {
 export type Model<T = never> = [T] extends [never] ? Models[keyof Models] : PickByValueStrict<Models, T>[keyof PickByValueStrict<Models, T>];
 
 export type Delegates = {
-  owner: Prisma.OwnerDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
   admin: Prisma.AdminDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
   profile: Prisma.ProfileDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
   project: Prisma.ProjectDelegate<DefaultArgs, Prisma.PrismaClientOptions>;

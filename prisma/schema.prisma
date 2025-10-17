@@ -26,13 +26,20 @@ enum TechType {
   UNKNOWN
 }
 
-model Owner {
-  id            String         @id @default(cuid())
-  name          String
-  profile       Profile?
+model Profile {
+  id        String  @id @default(cuid())
+  name      String
+  bio       String
+  location  String?
+  avatarUrl String
+
   admins        Admin[]
   projects      Project[]
   verifications Verification[]
+  socials       Social[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model Admin {
@@ -45,23 +52,10 @@ model Admin {
   auth       AdminAuth @default(CONFIRMATION)
   allowEmail DateTime  @default(now())
 
-  owner   Owner  @relation(fields: [ownerId], references: [id])
-  ownerId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String
 
-  @@index([ownerId])
-}
-
-model Profile {
-  id        String   @id @default(cuid())
-  bio       String?
-  location  String?
-  avatarUrl String?
-  socials   Social[]
-
-  owner   Owner  @relation(fields: [ownerId], references: [id])
-  ownerId String @unique
-
-  @@index([ownerId])
+  @@index([profileId])
 }
 
 model Project {
@@ -77,10 +71,10 @@ model Project {
   deleteAt    DateTime?
   techStack   Tech[]
 
-  owner   Owner  @relation(fields: [ownerId], references: [id])
-  ownerId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String
 
-  @@index([ownerId])
+  @@index([profileId])
 }
 
 model Tech {
@@ -118,8 +112,8 @@ model Verification {
   expires DateTime
   used    Boolean          @default(false)
 
-  owner   Owner  @relation(fields: [ownerId], references: [id])
-  ownerId String
+  profile   Profile @relation(fields: [profileId], references: [id])
+  profileId String
 
   @@index([type, used])
   @@index([expires])
