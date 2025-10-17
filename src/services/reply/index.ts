@@ -1,6 +1,6 @@
 import { createAccessToken, createRefreshToken } from "../../lib/token";
 import { timeInMs } from "@/lib/manipulate/number";
-import { omit } from "@/lib/manipulate/object";
+import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "./error/type";
 import { NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
@@ -18,6 +18,7 @@ const statusAlias: {
   { code: ["INVALID_AUTH", "INVALID_TOKEN"], status: 401 },
   { code: ["IS_BOUND", "NOT_BOUND", "INVALID_ROLE", "NOT_VERIFIED", "FORBIDDEN"], status: 403 },
   { code: ["NOT_FOUND"], status: 404 },
+  { code: ["METHOD_NOT_ALLOWED"], status: 405 },
   { code: ["CLIENT_FIELD", "MISSING_FIELDS", "SELF_REQUEST", "INVALID_CLIENT_TYPE"], status: 406 },
   { code: ["IS_VERIFIED", "IS_RECYCLED", "NOT_RECYCLED"], status: 409 },
   { code: ["TOO_MUCH_REQUEST"], status: 429 },
@@ -84,7 +85,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
    */
   body<T extends OneFieldOnly<{ success: SuccessType; error: ErrorResponseType }>>({ success, error }: T) {
     if (success) this._body = success;
-    if (error) this._errorBody = error;
+    if (error) this._errorBody = pick(error, ["code", "details", "field", "message", "status", "title"]);
     return this as unknown as T extends { success: infer S }
       ? [S] extends [never]
         ? Reply<unknown, false, true>

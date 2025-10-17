@@ -21,6 +21,7 @@ export const codeErrorClient = [
   "IS_RECYCLED",
   "NOT_RECYCLED",
   "FORBIDDEN",
+  "METHOD_NOT_ALLOWED"
 ] as const;
 
 /**

@@ -1,6 +1,7 @@
 import { capital } from "@/lib/manipulate/string";
 import { Reply } from "../reply";
 import { Fields, RestError } from "../reply/type";
+import { AllowedMethods } from "@/types/server";
 
 export type ServerErrorConfig =
   | { code: "CLIENT_FIELD"; deps: [err: { field: Fields; message: string } & RestError] }
@@ -17,9 +18,10 @@ export type ServerErrorConfig =
   | { code: "IS_RECYCLED"; deps: [err: { name: string } & RestError] }
   | { code: "NOT_RECYCLED"; deps: [err: { name: string } & RestError] }
   | { code: "SERVER_ERROR"; deps: [err: RequireAtLeastOne<{ error: Error; message: string }> & RestError] }
-  | { code: "FORBIDDEN"; deps: [err: { message: string } & RestError] };
-
+  | { code: "FORBIDDEN"; deps: [err: { message: string } & RestError] }
+  | { code: "METHOD_NOT_ALLOWED"; deps: [err: { method: string; allowed: AllowedMethods[] } & RestError] };
 export type ServerErrorCode = ServerErrorConfig["code"];
+
 type Config<C> = Extract<ServerErrorConfig, { code: C }>;
 type DepsOf<C extends ServerErrorCode> = Config<C>["deps"];
 
@@ -163,7 +165,8 @@ export class ServerError<C extends ServerErrorCode> {
         reply
           .error({
             ...deps[0],
-            message: deps[0].message || "Internal Server Error",
+            title: "Server Error",
+            message: deps[0].message || "Internal server error",
             code: "SERVER_ERROR",
             details: deps[0].error?.message,
           })
@@ -172,6 +175,14 @@ export class ServerError<C extends ServerErrorCode> {
       case "FORBIDDEN":
         reply.error({ ...deps[0], code: "SERVER_ERROR" }).fail();
         break;
+      case "METHOD_NOT_ALLOWED":
+        reply.error({
+          ...deps[0],
+          title: "Method Not Allowed",
+          code: "METHOD_NOT_ALLOWED",
+          message: `Method ${deps[0].method} not allowed`,
+          details: `Allowed method is ${deps[0].allowed.join(", ")}`,
+        });
     }
   }
 }
