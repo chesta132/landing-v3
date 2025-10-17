@@ -261,6 +261,33 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
   }
 
   /**
+   * Set headers from the response.
+   *
+   * @example
+   * ```ts
+   * reply.body({ error }).setHeader("Allow", "GET, POST").ok();
+   *
+   * const headers = new Headers({ "Content-Type": "text/html" });
+   * reply.body({ success: user }).setHeader(headers).ok();
+   * ```
+   *
+   * @param name Name of the header
+   * @param value Value of the header
+   * @param header Header instance
+   * @returns this
+   */
+  setHeader(name: string, value: number | string | readonly string[]): this;
+  setHeader(header: Headers): this;
+  setHeader(headerOrName: string | Headers, value?: number | string | readonly string[]) {
+    if (headerOrName instanceof Headers) {
+      this._res.setHeaders(headerOrName);
+    } else {
+      this._res.setHeader(headerOrName, value!);
+    }
+    return this;
+  }
+
+  /**
    * Reset all internal state of a Reply instance to its default values.
    * This clears the success/error body, JSON payload, and tokens.
    *
