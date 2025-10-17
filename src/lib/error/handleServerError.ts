@@ -2,7 +2,7 @@ import { Prisma } from "@prisma/client";
 import { Reply } from "@/services/reply";
 import { ServerError } from "@/services/server-error";
 
-export const handleServerError = async (err: unknown, reply: Reply) => {
+export const handleServerError = (err: unknown, reply: Reply) => {
   const res = reply.reset();
   if (err instanceof ServerError) {
     new ServerError(err).exec(res);

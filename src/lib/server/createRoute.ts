@@ -4,11 +4,12 @@ import { AllowedMethods, ApiRequest, ApiResponse, BodyableMethods, Handlers, Rec
 import { NextApiRequest, NextApiResponse } from "next";
 import { cookies } from "next/headers";
 import { validateRequires } from "./validate";
+import { handleServerError } from "../error/handleServerError";
 
 export type CreateRouteOptionsBase = { neededBody?: string[] };
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>>;
 
-export function createRoute<H extends Handlers>(handlers: H, recover: Recoverer, options?: CreateRouteOptions<H>) {
+export function createRoute<H extends Handlers>(handlers: H, recover?: Recoverer, options?: CreateRouteOptions<H>) {
   const available = Object.entries(handlers)
     .filter((h) => typeof h[1] === "function")
     .map((h) => h[0]) as AllowedMethods[];
@@ -24,9 +25,10 @@ export function createRoute<H extends Handlers>(handlers: H, recover: Recoverer,
       const handler = handlers[req.method as AllowedMethods];
       if (handler) return await handler(req as ApiRequest, res as ApiResponse);
 
-      new ServerError("METHOD_NOT_ALLOWED", { allowed: available, method: req.method! }).exec(reply);
+      return new ServerError("METHOD_NOT_ALLOWED", { allowed: available, method: req.method! }).exec(reply);
     } catch (err) {
-      return await recover(err, req as ApiRequest, res as ApiResponse);
+      if (recover) return await recover(err, req as ApiRequest, res as ApiResponse);
+      else return handleServerError(err, (res as ApiResponse).reply);
     }
   };
 }

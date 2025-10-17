@@ -15,6 +15,7 @@ enum AdminAuth {
 enum VerificationType {
   CONFIRMATION_AUTH
   OTP_AUTH
+  OTP_ACTION
 }
 
 enum TechType {
