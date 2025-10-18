@@ -1,5 +1,5 @@
 import { createRoute } from "@/lib/server/createRoute";
-import { ProfileController } from "../_controller/profile";
+import { ProfileController } from "../_controllers/profile";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

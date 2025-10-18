@@ -6,7 +6,7 @@ import { ServerError } from "@/services/server-error";
 import { ApiRequest, ApiResponse } from "@/types/server";
 import { Profile } from "@prisma/client";
 
-export class ProfileController {
+export abstract class ProfileController {
   static neededBody = ["bio", "avatarUrl", "name"];
 
   static async get(_: ApiRequest<never, never, never>, { reply }: ApiResponse<Profile>) {
