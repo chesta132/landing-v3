@@ -16,11 +16,11 @@ const statusAlias: {
   status: number;
 }[] = [
   { code: ["INVALID_AUTH", "INVALID_TOKEN"], status: 401 },
-  { code: ["IS_BOUND", "NOT_BOUND", "INVALID_ROLE", "NOT_VERIFIED", "FORBIDDEN"], status: 403 },
+  { code: ["IS_BOUND", "NOT_BOUND", "NOT_VERIFIED", "FORBIDDEN"], status: 403 },
   { code: ["NOT_FOUND"], status: 404 },
   { code: ["METHOD_NOT_ALLOWED"], status: 405 },
   { code: ["CLIENT_FIELD", "MISSING_FIELDS", "SELF_REQUEST", "INVALID_CLIENT_TYPE"], status: 406 },
-  { code: ["IS_VERIFIED", "IS_RECYCLED", "NOT_RECYCLED"], status: 409 },
+  { code: ["IS_VERIFIED", "IS_RECYCLED", "NOT_RECYCLED", "CONFLICT"], status: 409 },
   { code: ["TOO_MUCH_REQUEST"], status: 429 },
   { code: ["CLIENT_REFRESH"], status: 301 },
   { code: ["SERVER_ERROR"], status: 500 },

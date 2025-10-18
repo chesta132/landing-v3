@@ -19,7 +19,8 @@ export type ServerErrorConfig =
   | { code: "NOT_RECYCLED"; deps: [err: { name: string } & RestError] }
   | { code: "SERVER_ERROR"; deps: [err: RequireAtLeastOne<{ error: Error; message: string }> & RestError] }
   | { code: "FORBIDDEN"; deps: [err: { message: string } & RestError] }
-  | { code: "METHOD_NOT_ALLOWED"; deps: [err: { method: string; allowed: AllowedMethods[] } & RestError] };
+  | { code: "METHOD_NOT_ALLOWED"; deps: [err: { method: string; allowed: AllowedMethods[] } & RestError] }
+  | { code: "CONFLICT"; deps: [err: { message: string } & RestError] };
 export type ServerErrorCode = ServerErrorConfig["code"];
 
 type Config<C> = Extract<ServerErrorConfig, { code: C }>;
@@ -186,6 +187,10 @@ export class ServerError<C extends ServerErrorCode> {
           })
           .setHeader("Allow", deps[0].allowed.join(", "))
           .fail();
+        break;
+      case "CONFLICT":
+        reply.error({ ...deps[0], code: "CONFLICT", message: deps[0].message }).fail();
+        break;
     }
   }
 }

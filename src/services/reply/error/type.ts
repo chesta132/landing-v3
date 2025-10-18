@@ -1,7 +1,7 @@
 /**
  * Authentication-related error codes.
  */
-export const codeErrorAuth = ["INVALID_AUTH", "IS_BOUND", "NOT_BOUND", "INVALID_TOKEN", "INVALID_ROLE"] as const;
+export const codeErrorAuth = ["INVALID_AUTH", "IS_BOUND", "NOT_BOUND", "INVALID_TOKEN"] as const;
 
 /**
  * Field validation-related error codes.
@@ -21,13 +21,13 @@ export const codeErrorClient = [
   "IS_RECYCLED",
   "NOT_RECYCLED",
   "FORBIDDEN",
-  "METHOD_NOT_ALLOWED"
+  "METHOD_NOT_ALLOWED",
 ] as const;
 
 /**
  * Server-side related error codes.
  */
-export const codeErrorServer = ["SERVER_ERROR", "NOT_FOUND", "BAD_GATEWAY"] as const;
+export const codeErrorServer = ["SERVER_ERROR", "NOT_FOUND", "BAD_GATEWAY", "CONFLICT"] as const;
 
 /**
  * All possible error code values.
