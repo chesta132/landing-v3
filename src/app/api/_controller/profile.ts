@@ -9,12 +9,12 @@ import { Profile } from "@prisma/client";
 export class ProfileController {
   static neededBody = ["bio", "avatarUrl", "name"];
 
-  static async get(_: ApiRequest, { reply }: ApiResponse<Profile>) {
+  static async get(_: ApiRequest<never, never, never>, { reply }: ApiResponse<Profile>) {
     const profile = await crud.getOne(prisma.profile, {});
     reply.success(profile).respond();
   }
 
-  static async create(req: ApiRequest, { reply }: ApiResponse<Profile>) {
+  static async create(req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, never, never>, { reply }: ApiResponse<Profile>) {
     await crud.getOne(
       prisma.profile,
       {},
@@ -30,7 +30,7 @@ export class ProfileController {
       .created();
   }
 
-  static async update(req: ApiRequest, { reply }: ApiResponse<Profile>) {
+  static async update(req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, "id", never>, { reply }: ApiResponse<Profile>) {
     const id = req.query.id as string;
 
     const update = pick(req.body || {}, ["bio", "avatarUrl", "name", "location"]);
@@ -38,8 +38,8 @@ export class ProfileController {
     reply.success(profile).info(`${profile.name} successfully updated.`).respond();
   }
 
-  static async delete(req: ApiRequest, { reply }: ApiResponse<Profile>) {
-    const { id, token } = req.query as Record<string, string>;
+  static async delete(req: ApiRequest<never, "id", "token">, { reply }: ApiResponse<Profile>) {
+    const { id, token } = req.query as Record<"id" | "token", string>;
 
     await crud.getOne(prisma.verification, { type: "OTP_ACTION", secret: token }, { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } });
     const deleted = await crud.deleteById(prisma.profile, id);

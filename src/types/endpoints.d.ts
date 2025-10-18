@@ -6,5 +6,9 @@ namespace Endpoints {
 interface Endpoints {}
 
 export type Endpoint = { path: string; param: string; response: any; query: Record<string, any>; body: any };
-export type BuildEndpoint<E extends Partial<Endpoint>> = Omit<Record<keyof Endpoint, never>, keyof E> & E;
-export type InferResponseByHandler<H extends Handler> = H extends (req: ApiRequest, res: ApiResponse<infer R>) => Promise<void> | void ? R : never;
+export type BuildEndpoint<E extends string, H extends Handler> = H extends (
+  req: ApiRequest<infer B, infer P, infer Q>,
+  res: ApiResponse<infer R>
+) => Promise<void> | void
+  ? { path: E; param: P; response: R; query: Q; body: B }
+  : never;

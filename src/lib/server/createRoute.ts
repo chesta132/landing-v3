@@ -23,11 +23,11 @@ export function createRoute<H extends Handlers>(handlers: H, recover?: Recoverer
       if (neededBody) validateRequires(neededBody, req.body || {});
 
       const handler = handlers[req.method as AllowedMethods];
-      if (handler) return await handler(req as ApiRequest, res as ApiResponse);
+      if (handler) return await handler(req as ApiRequest<any & never>, res as ApiResponse);
 
       return new ServerError("METHOD_NOT_ALLOWED", { allowed: available, method: req.method! }).exec(reply);
     } catch (err) {
-      if (recover) return await recover(err, req as ApiRequest, res as ApiResponse);
+      if (recover) return await recover(err, req as ApiRequest<any & never>, res as ApiResponse);
       else return handleServerError(err, (res as ApiResponse).reply);
     }
   };
