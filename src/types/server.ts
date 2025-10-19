@@ -1,4 +1,5 @@
 import { Reply } from "@/services/reply";
+import { Admin } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
 
 export type AllowedMethods = "POST" | "GET" | "PUT" | "DELETE" | "PATCH";
@@ -12,7 +13,7 @@ export interface ApiResponse<Data = any> extends NextApiResponse<Data> {
   reply: Reply<Data>;
 }
 
-export type Handler = (req: ApiRequest<any & never>, res: ApiResponse<any>) => Promise<void> | void;
+export type Handler = (req: ApiRequest<any & never>, res: ApiResponse<any>, admin: Admin) => Promise<void> | void;
 export type Recoverer = (err: unknown, req: ApiRequest<any & never>, res: ApiResponse<any>) => Promise<void> | void;
 
 export type Handlers = RequireAtLeastOne<Record<AllowedMethods, Handler>>;
