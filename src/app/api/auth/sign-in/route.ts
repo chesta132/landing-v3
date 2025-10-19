@@ -1,4 +1,4 @@
-import { createRoute } from "@/lib/server/createRoute";
 import { AuthController } from "../../_controllers/auth";
+import { Route } from "@/lib/server/route";
 
-export default createRoute({ POST: AuthController.signin }, undefined, { POST: { neededBody: AuthController.neededBodySignin } });
+export default Route.create({ POST: AuthController.signin }, { POST: { neededBody: AuthController.neededBodySignin } });

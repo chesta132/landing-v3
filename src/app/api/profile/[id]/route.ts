@@ -1,5 +1,5 @@
-import { createRoute } from "@/lib/server/createRoute";
 import { ProfileController } from "../../_controllers/profile";
+import { Route } from "@/lib/server/route";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {
@@ -11,4 +11,4 @@ declare module "@/types/endpoints" {
   interface Endpoints extends Endpoints.Profile {}
 }
 
-export default createRoute({ PUT: ProfileController.update, DELETE: ProfileController.delete }, undefined, { PUT: ProfileController });
+export default Route.create({ PUT: ProfileController.update, DELETE: ProfileController.delete }, { PUT: ProfileController });

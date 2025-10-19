@@ -8,6 +8,8 @@ import { CookieUserBase, DataToResponse, ErrorResponseType, ResType, ReplyOption
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
+import { cookies } from "next/headers";
+import { ApiResponse } from "@/types/server";
 
 const defaultPayload = <T>(): DataToResponse<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 
@@ -188,11 +190,11 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
     }
     let { id } = user;
     this._accessToken = createAccessToken({
-      userId: id,
+      adminId: id,
       expires: new Date(Date.now() + (Number(ACCESS_TOKEN_EXPIRY) || timeInMs({ minute: 5 }))),
     });
     this._refreshToken = createRefreshToken(
-      { userId: id, expires: new Date(Date.now() + (Number(REFRESH_TOKEN_EXPIRY) || timeInMs({ week: 1 }))) },
+      { adminId: id, expires: new Date(Date.now() + (Number(REFRESH_TOKEN_EXPIRY) || timeInMs({ week: 1 }))) },
       this._rememberMe ? undefined : null
     );
     return this;
@@ -418,3 +420,10 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
     this._reset();
   }) as any;
 }
+
+export const createReply = async (res: NextApiResponse) => {
+  const cookieStore = await cookies();
+  const reply = new Reply(res, { cookieStore });
+  (res as ApiResponse).reply = reply;
+  return res as ApiResponse;
+};
