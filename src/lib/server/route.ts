@@ -50,21 +50,9 @@ export abstract class Route {
    * });
    *
    * @example
-   * // With array handler
-   * export default createRoute(
-   *   {
-   *     POST: async (req, res) => res.reply.created({ single: req.body })
-   *   },
-   *   {
-   *     POST: async (req, res) => res.reply.created({ multiple: req.body })
-   *   }
-   * );
-   *
-   * @example
    * // With body validation and error recovery
    * export default createRoute(
    *   { POST: async (req, res) => res.reply.created({ user: req.body }) },
-   *   undefined,
    *   {
    *     POST: { neededBody: ['email', 'password'] },
    *     recover: async (err, req, res) => res.reply.internalError('Custom error')
