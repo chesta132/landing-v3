@@ -1,4 +1,4 @@
-import { Admin, Profile, Project, Social, Tech, Verification, Prisma } from "@prisma/client";
+import { Admin, Profile, Project, Social, Tech, Verification, Prisma, Revoked } from "@prisma/client";
 import { DefaultArgs } from "@prisma/client/runtime/library";
 
 export type Models = {
@@ -8,6 +8,7 @@ export type Models = {
   social: Social;
   tech: Tech;
   verification: Verification;
+  revoked: Revoked
 };
 
 export type Model<T = never> = [T] extends [never] ? Models[keyof Models] : PickByValueStrict<Models, T>[keyof PickByValueStrict<Models, T>];
@@ -19,6 +20,7 @@ export type Delegates = {
   social: Prisma.SocialDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
   tech: Prisma.TechDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
   verification: Prisma.VerificationDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
+  revoked: Prisma.RevokedDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
 };
 
 export type Delegate<T = never> = [T] extends [never]

@@ -119,3 +119,13 @@ model Verification {
   @@index([type, used])
   @@index([expires])
 }
+
+model Revoked {
+  id      String   @id @default(cuid())
+  type    String
+  value   String
+  expires DateTime
+
+  @@index([value])
+  @@index([expires])
+}
