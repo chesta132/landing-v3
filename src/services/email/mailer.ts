@@ -1,6 +1,7 @@
 import nodemailer from "nodemailer";
 import { emailTemplate } from "./template";
 import { capitalEach } from "@/lib/manipulate/string";
+import { CLIENT_URL } from "@/config";
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
@@ -51,6 +52,29 @@ export const sendCredentialChanges = async (email: string, name: string, credent
         title: `${capitalEach(credentials)} Change`,
         name: capitalEach(name),
         message: `Your Chardy account ${credentials.toLowerCase()} has been successfully updated. If you did not make this change, please contact Chardy support immediately.\n\nFor your security, please do not share your login credentials with anyone, including Chardy employees.`,
+      }),
+    });
+  } catch (error) {
+    console.error("Email error", error);
+    throw error as Error;
+  }
+};
+
+export const sendAuthConfirmationEmail = async (email: string, secret: string, name: string) => {
+  try {
+    await transporter.sendMail({
+      from: "Chardy Team",
+      to: email,
+      subject: "Chardy Login Confirmation",
+      html: emailTemplate({
+        mode: "verification",
+        title: "Confirm Your Login",
+        message: `Someone just logged into your Chardy account. Please confirm this was you by pressing button bellow.\n\nIf you did not attempt to login, please contact Chardy support immediately.`,
+        name: capitalEach(name),
+        button: {
+          href: `${CLIENT_URL}/auth/confirm?secret=${secret}`,
+          text: "Confirm Login",
+        },
       }),
     });
   } catch (error) {
