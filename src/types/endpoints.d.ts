@@ -2,6 +2,7 @@ import { AllowedMethods, ApiRequest, ApiResponse, Handler } from "@/types/server
 
 namespace Endpoints {
   interface Profile extends Record<Lowercase<AllowedMethods>, never> {}
+  interface Auth extends Record<Lowercase<AllowedMethods>, never> {}
 }
 interface Endpoints {}
 
