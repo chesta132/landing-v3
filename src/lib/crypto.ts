@@ -38,7 +38,7 @@ export const encrypt = (data: any) => {
  * @example
  * decrypt("8f5a1c...-9e2b3c...", { parse: true }) // { foo: "bar" }
  */
-export const decrypt = (encrypted?: string | null, options?: { parse?: boolean }) => {
+export const decrypt = <T = string>(encrypted?: string | null, options?: { parse?: boolean }): T | string | null => {
   if (!encrypted) return "";
 
   const parts = encrypted.split("-");

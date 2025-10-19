@@ -12,8 +12,8 @@ import { UAParser } from "ua-parser-js";
 
 export type SigninPayload = Pick<Admin, "email" | "password"> & { rememberMe: boolean };
 export type SignupPayload = Pick<Admin, "email" | "password" | "name"> & { rememberMe: boolean };
+export type SigninByOtpPayload = { otp: string; session: string };
 export type SigninResponse = { type: $Enums.AdminAuth; session: string };
-export type ConfirmSigninOtpPayload = { otp: string; session: string };
 
 export abstract class AuthController {
   static neededBodySignin = ["email", "password", "rememberMe"];
@@ -79,9 +79,9 @@ export abstract class AuthController {
     reply.success("SUCCESS").respond();
   }
 
-  static async confirmSigninOtp(req: ApiRequest<ConfirmSigninOtpPayload, never, never>, { reply }: ApiResponse<Admin>) {
+  static async signinByOtp(req: ApiRequest<SigninByOtpPayload, never, never>, { reply }: ApiResponse<Admin>) {
     const { otp } = req.body;
-    const session = decrypt(req.body.session) as string;
+    const session = decrypt(req.body.session) || "";
     const startsWith = `otp=${otp}`;
     const endsWith = `session=${session}`;
 
@@ -101,7 +101,7 @@ export abstract class AuthController {
   }
 
   static async signinByConfirm(req: ApiRequest<never, never, "session">, { reply }: ApiResponse<Admin>) {
-    const session = req.query.session as string;
+    const session = decrypt(req.query.session as string) || "";
 
     const verif = await crud.getOne(
       prisma.verification,

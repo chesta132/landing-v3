@@ -17,8 +17,9 @@ export abstract class AuthService {
   static parseSecret(secret: string) {
     const isValid = (secret: string) => secret.includes("otp=") && secret.includes(";session=") && secret.includes(";admin=");
     if (!isValid(secret)) {
-      if (isValid(decrypt(secret))) {
-        secret = decrypt(secret);
+      const decrypted = decrypt(secret) || "";
+      if (isValid(decrypted)) {
+        secret = decrypted;
       } else return null;
     }
     const [otpPart, idPart, sessionPart] = secret.split(";");
