@@ -3,6 +3,13 @@ interface EmailButton {
   href: string;
 }
 
+interface EmailLoginInfo {
+  device?: string;
+  location?: string;
+  time?: string;
+  ip?: string;
+}
+
 interface EmailTemplateProps {
   mode: "verification" | "someone-login" | "information" | "confirmation";
   brandName?: string;
@@ -14,12 +21,7 @@ interface EmailTemplateProps {
   codeExpiry?: string;
   additionalInfo?: string;
   footerText?: string;
-  loginInfo?: {
-    device?: string;
-    location?: string;
-    time?: string;
-    ip?: string;
-  };
+  loginInfo?: EmailLoginInfo;
 }
 
 function emailTemplate({
@@ -243,4 +245,4 @@ function emailTemplate({
 }
 
 export { emailTemplate };
-export type { EmailTemplateProps, EmailButton };
+export type { EmailTemplateProps, EmailButton, EmailLoginInfo };

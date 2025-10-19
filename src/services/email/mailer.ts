@@ -1,5 +1,5 @@
 import nodemailer from "nodemailer";
-import { emailTemplate } from "./template";
+import { EmailLoginInfo, emailTemplate } from "./template";
 import { capitalEach } from "@/lib/manipulate/string";
 import { CLIENT_URL } from "@/config";
 
@@ -18,7 +18,7 @@ export const transporter = nodemailer.createTransport({
 
 export const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
 
-export const sendOTPEmail = async (email: string, otpCode: string, name: string) => {
+export const sendOTPEmail = async (email: string, otpCode: string, name: string, loginInfo?: EmailLoginInfo) => {
   try {
     await transporter.sendMail({
       from: "Chardy Team",
@@ -30,6 +30,7 @@ export const sendOTPEmail = async (email: string, otpCode: string, name: string)
         message: `You have requested a One-Time Password (OTP) to complete your action on Chardy. Please use the following code to proceed.\n\nFor your security, please do not share this OTP with anyone, including Chardy employees.`,
         name: capitalEach(name),
         code: otpCode,
+        loginInfo,
       }),
     });
   } catch (error) {
@@ -60,7 +61,7 @@ export const sendCredentialChanges = async (email: string, name: string, credent
   }
 };
 
-export const sendAuthConfirmationEmail = async (email: string, secret: string, name: string) => {
+export const sendAuthConfirmationEmail = async (email: string, secret: string, name: string, loginInfo?: EmailLoginInfo) => {
   try {
     await transporter.sendMail({
       from: "Chardy Team",
@@ -75,6 +76,7 @@ export const sendAuthConfirmationEmail = async (email: string, secret: string, n
           href: `${CLIENT_URL}/auth/confirm?secret=${secret}`,
           text: "Confirm Login",
         },
+        loginInfo,
       }),
     });
   } catch (error) {
