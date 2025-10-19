@@ -1,3 +1,4 @@
+import { decrypt, encrypt } from "@/lib/crypto";
 import { timeInMs } from "@/lib/manipulate/number";
 import { AuthService, AuthVerificationInfo } from "@/services/auth";
 import prisma from "@/services/db/client";
@@ -35,10 +36,10 @@ export abstract class AuthController {
     const otp = generateOTP();
     const session = crypto.randomUUID();
     const expires = new Date(Date.now() + timeInMs({ minute: 10 }));
-    const secret = AuthService.createSecret(otp, session, admin);
+    const secret = AuthService.createSecret(otp, session, admin.id);
 
     await AuthService.authStrategy(admin, { expires, rememberMe, secret, ua });
-    reply.success({ type: admin.auth, session }).respond();
+    reply.success({ type: admin.auth, session: encrypt(session) }).respond();
   }
 
   static async signup(req: ApiRequest<SignupPayload, never, never>, { reply }: ApiResponse<Admin>) {
@@ -61,12 +62,12 @@ export abstract class AuthController {
     reply.success(admin).setCookie({ template: "REFRESH_ACCESS", rememberMe }).respond();
   }
 
-  static async confirmSignin(req: ApiRequest<never, never, "secret">, { reply }: ApiResponse<undefined>) {
-    const secret = req.query.secret as string;
-    const parsed = AuthService.parseSecret(secret);
+  static async confirmSignin(req: ApiRequest<never, never, "secret">, { reply }: ApiResponse<"SUCCESS">) {
+    const parsed = AuthService.parseSecret(req.query.secret as string);
     if (!parsed) {
       throw new ServerError("CLIENT_TYPE", { field: "secret" });
     }
+    const secret = AuthService.createSecret(parsed.otp, parsed.session, parsed.adminId);
     const verif = await crud.getOne(
       prisma.verification,
       { type: "CONFIRMATION_AUTH", secret },
@@ -75,16 +76,18 @@ export abstract class AuthController {
     const info = JSON.parse(verif.info) as AuthVerificationInfo;
     info.verified = true;
     await crud.updateById(prisma.verification, verif.id, { info: JSON.stringify(info), expires: new Date(Date.now() + timeInMs({ minute: 15 })) });
-    reply.success(undefined).respond();
+    reply.success("SUCCESS").respond();
   }
 
   static async confirmSigninOtp(req: ApiRequest<ConfirmSigninOtpPayload, never, never>, { reply }: ApiResponse<Admin>) {
-    const { otp, session } = req.body;
-    const secret = AuthService.createMiniSecret(otp, session);
+    const { otp } = req.body;
+    const session = decrypt(req.body.session) as string;
+    const startsWith = `otp=${otp}`;
+    const endsWith = `session=${session}`;
 
     const verif = await crud.getOne(
       prisma.verification,
-      { type: "OTP_AUTH", secret: { startsWith: secret } },
+      { type: "OTP_AUTH", secret: { startsWith, endsWith } },
       { error: { notFound: new ServerError("INVALID_OTP") } }
     );
     const { rememberMe } = JSON.parse(verif.info) as AuthVerificationInfo;
@@ -102,7 +105,7 @@ export abstract class AuthController {
 
     const verif = await crud.getOne(
       prisma.verification,
-      { secret: { endsWith: session }, type: "CONFIRMATION_AUTH" },
+      { secret: { endsWith: `session=${session}` }, type: "CONFIRMATION_AUTH" },
       { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } }
     );
     const { rememberMe, verified } = JSON.parse(verif.info) as AuthVerificationInfo;

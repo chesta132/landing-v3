@@ -10,18 +10,18 @@ export type AuthVerificationInfo = { rememberMe: boolean; verified: boolean };
 export type CreateAuthOptions = { expires: Date; secret: string; rememberMe: boolean; ua: UAParser.IResult };
 
 export abstract class AuthService {
-  static createMiniSecret(otp: string, session: string) {
-    return encrypt(`otp=${otp};session=${session}`);
-  }
-
-  static createSecret(otp: string, session: string, admin: Admin) {
-    return encrypt(`otp=${otp};admin=${admin.id};session=${session}`);
+  static createSecret(otp: string, session: string, admin: string) {
+    return `otp=${otp};admin=${admin};session=${session}`;
   }
 
   static parseSecret(secret: string) {
-    const dec = decrypt(secret) as string;
-    if (!(dec.includes("otp=") && dec.includes(";session=") && dec.includes(";admin="))) return null;
-    const [otpPart, idPart, sessionPart] = dec.split(";");
+    const isValid = (secret: string) => secret.includes("otp=") && secret.includes(";session=") && secret.includes(";admin=");
+    if (!isValid(secret)) {
+      if (isValid(decrypt(secret))) {
+        secret = decrypt(secret);
+      } else return null;
+    }
+    const [otpPart, idPart, sessionPart] = secret.split(";");
     const otp = otpPart.replace("otp=", "");
     const session = sessionPart.replace("session=", "");
     const adminId = idPart.replace("admin=", "");
@@ -38,7 +38,7 @@ export abstract class AuthService {
       type: "CONFIRMATION_AUTH",
       info: JSON.stringify({ rememberMe, verified: false } satisfies AuthVerificationInfo),
     });
-    await sendAuthConfirmationEmail(admin.email, secret, admin.name, {
+    await sendAuthConfirmationEmail(admin.email, encrypt(secret), admin.name, {
       device: ua.device.vendor || ua.browser.name,
       time: new Date().toTimeString(),
     });
