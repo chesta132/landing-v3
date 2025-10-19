@@ -1,6 +1,6 @@
 import { verifyAccessToken, verifyRefreshToken } from "@/lib/token";
 import { ServerError } from "../../../services/server-error";
-import { ApiRequest, ApiResponse, Handler } from "@/types/server";
+import { ApiRequest, ApiResponse } from "@/types/server";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/config";
 import crud from "../../../services/db/crud";
 import prisma from "../../../services/db/client";

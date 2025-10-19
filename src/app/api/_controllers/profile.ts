@@ -4,7 +4,7 @@ import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ServerError } from "@/services/server-error";
 import { ApiRequest, ApiResponse } from "@/types/server";
-import { Profile } from "@prisma/client";
+import { Admin, Profile } from "@prisma/client";
 
 export abstract class ProfileController {
   static neededBody = ["bio", "avatarUrl", "name"];
@@ -30,7 +30,11 @@ export abstract class ProfileController {
       .created();
   }
 
-  static async update(req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, "id", never>, { reply }: ApiResponse<Profile>) {
+  static async update(
+    req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, "id", never>,
+    { reply }: ApiResponse<Profile>,
+    _: Admin
+  ) {
     const id = req.query.id as string;
 
     const update = pick(req.body || {}, ["bio", "avatarUrl", "name", "location"]);
@@ -38,7 +42,7 @@ export abstract class ProfileController {
     reply.success(profile).info(`${profile.name} successfully updated.`).respond();
   }
 
-  static async delete(req: ApiRequest<never, "id", "token">, { reply }: ApiResponse<Profile>) {
+  static async delete(req: ApiRequest<never, "id", "token">, { reply }: ApiResponse<Profile>, _: Admin) {
     const { id, token } = req.query as Record<"id" | "token", string>;
 
     await crud.getOne(prisma.verification, { type: "OTP_ACTION", secret: token }, { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } });

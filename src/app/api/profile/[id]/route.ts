@@ -4,8 +4,8 @@ import { Route } from "@/lib/server/route";
 declare module "@/types/endpoints" {
   namespace Endpoints {
     interface Profile {
-      put: BuildEndpoint<"/profile", typeof ProfileController.update>;
-      delete: BuildEndpoint<"/profile", typeof ProfileController.delete>;
+      put: BuildEndpoint<"/profile/{id}", typeof ProfileController.update>;
+      delete: BuildEndpoint<"/profile/{id}", typeof ProfileController.delete>;
     }
   }
   interface Endpoints extends Endpoints.Profile {}
