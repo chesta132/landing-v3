@@ -32,3 +32,5 @@ type ReverseModelMap<T> = T extends any
   : never;
 
 export type InferDelegateByModel<T> = ReverseModelMap<T> extends keyof Delegates ? Delegates[ReverseModelMap<T>] : never;
+
+export type SoftDeleteable = InferDelegateByModel<ValueOf<PickByValueStrict<Models, { isRecycled: boolean }>>>;

@@ -1,4 +1,4 @@
-import { Delegate, InferDelegateByModel, Models } from "@/types/models";
+import { Delegate, InferDelegateByModel, Models, SoftDeleteable } from "@/types/models";
 import { QueryConditionalPresent, QueryError, QueryFilter, QueryOptions, QueryResult } from "../type";
 import { handleDBServiceError } from "@/lib/error/handleDBError";
 import { getDelegateName } from "../../../lib/db";
@@ -36,8 +36,6 @@ export const deleteById = <T extends Delegate, E extends QueryError>(
   options?: QueryOptions<T["delete"], E>
 ): Promise<QueryResult<T["delete"], E>> => base(model, () => (model.delete as Function)({ where: { id }, ...options }), options);
 
-type SoftDeleteable = InferDelegateByModel<ValueOf<PickByValueStrict<Models, { isRecycled: boolean }>>>;
-
 export const softDelete = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["update"]>,
@@ -51,3 +49,14 @@ export const softDeleteById = <T extends SoftDeleteable, E extends QueryError>(
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> =>
   base(model, () => (model.update as Function)({ where: { id }, data: { isRecycled: true, deleteAt: generateDeleteAtTTL() }, ...options }), options);
+
+export const softDeleteMany = <T extends SoftDeleteable, E extends QueryError>(
+  model: T,
+  filter: QueryFilter<T["updateManyAndReturn"]>,
+  options?: QueryOptions<T["updateManyAndReturn"], E>
+): Promise<QueryResult<T["updateManyAndReturn"], E>> =>
+  base(
+    model,
+    () => (model.updateManyAndReturn as Function)({ where: filter, data: { isRecycled: true, deleteAt: generateDeleteAtTTL() }, ...options }),
+    options
+  );

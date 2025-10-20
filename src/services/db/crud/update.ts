@@ -1,4 +1,4 @@
-import { Delegate } from "@/types/models";
+import { Delegate, SoftDeleteable } from "@/types/models";
 import { QueryConditionalPresent, QueryData, QueryError, QueryFilter, QueryOptions, QueryResult } from "../type";
 import { handleDBServiceError } from "@/lib/error/handleDBError";
 import { getDelegateName } from "../../../lib/db";
@@ -45,3 +45,24 @@ export const updateById = <T extends Delegate, E extends QueryError>(
   data: QueryData<T["update"]>,
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> => base(model, () => (model.update as Function)({ where: { id }, data, ...options }), options);
+
+export const restoreOne = <T extends SoftDeleteable, E extends QueryError>(
+  model: T,
+  filter: QueryFilter<T["update"]>,
+  options?: QueryOptions<T["update"], E>
+): Promise<QueryResult<T["update"], E>> =>
+  base(model, () => (model.update as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...options }), options);
+
+export const restoreById = <T extends SoftDeleteable, E extends QueryError>(
+  model: T,
+  id: string,
+  options?: QueryOptions<T["update"], E>
+): Promise<QueryResult<T["update"], E>> =>
+  base(model, () => (model.update as Function)({ where: { id }, data: { isRecycled: false, deleteAt: null }, ...options }), options);
+
+export const restoreMany = <T extends SoftDeleteable, E extends QueryError>(
+  model: T,
+  filter: QueryFilter<T["updateManyAndReturn"]>,
+  options?: QueryOptions<T["updateManyAndReturn"], E>
+): Promise<QueryResult<T["updateManyAndReturn"], E>> =>
+  base(model, () => (model.updateManyAndReturn as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...options }), options);
