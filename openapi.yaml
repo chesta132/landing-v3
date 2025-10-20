@@ -210,6 +210,7 @@ components:
         avatarUrl: { type: string }
         location: { oneOf: [{ type: string }, { type: "null" }] }
 paths:
+  # Profile
   /profile:
     get:
       summary: Get profile
@@ -251,6 +252,7 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+
   /profile/{id}:
     put:
       summary: Update profile
@@ -291,6 +293,128 @@ paths:
                   - type: object
                     properties:
                       data: { $ref: "#/components/schemas/ProfileBase" }
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+
+  # Auth
+
+  /auth/sign-up:
+    post:
+      summary: Create admin account ⚠️CREATE PROFILE FIRST
+      responses:
+        200:
+          description: Created admin account
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ResponseEnvelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/AdminBase" }
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+  /auth/sign-in:
+    post:
+      summary: Initiate sign in as admin
+      responses:
+        200:
+          description: Entering 2FA Auth
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        required: [type, session]
+                        properties:
+                          type: { $ref: "#/components/schemas/AdminAuth" }
+                          session: { type: string }
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+  /auth/sign-in/confirm:
+    post:
+      summary: Confirm session login for CONFIRMATION auth
+      parameters:
+        - name: secret
+          in: query
+          schema: { type: string }
+      responses:
+        200:
+          description: Successfully confirm session, admin have to go back to the browser that used for sign in
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ResponseEnvelope"
+                  - type: object
+                    properties:
+                      data:
+                        type: string
+                        enum:
+                          - SUCCESS
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+  /auth/sign-in/confirmed:
+    post:
+      summary: Confirm session login for CONFIRMATION auth
+      parameters:
+        - name: session
+          in: query
+          schema: { type: string }
+      responses:
+        200:
+          description: Check is session has been verified. If true, admin have to direct to dashboard
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ResponseEnvelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/AdminBase" }
+        500:
+          description: Server error
+          content:
+            application/json:
+              schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
+  /auth/sign-in/otp:
+    post:
+      summary: Confirm session login for OTP auth
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                otp: { type: string }
+                session: { type: string }
+      responses:
+        200:
+          description: Successfully confirm session, admin have to direct to dashboard page
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: "#/components/schemas/ResponseEnvelope"
+                  - type: object
+                    properties:
+                      data: { $ref: "#/components/schemas/AdminBase" }
         500:
           description: Server error
           content:
