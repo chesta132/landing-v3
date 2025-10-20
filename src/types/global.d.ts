@@ -179,3 +179,6 @@ type EitherWithKeys<Keys extends object, Others extends object> =
 
 /** Flattens a union type U into a single type. */
 type MergeUnion<U> = (U extends any ? (k: U) => void : never) extends (k: infer I) => void ? I : never;
+
+/** Value of `T` */
+type ValueOf<T> = T[keyof T];

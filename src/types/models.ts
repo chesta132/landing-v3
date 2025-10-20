@@ -8,10 +8,10 @@ export type Models = {
   social: Social;
   tech: Tech;
   verification: Verification;
-  revoked: Revoked
+  revoked: Revoked;
 };
 
-export type Model<T = never> = [T] extends [never] ? Models[keyof Models] : PickByValueStrict<Models, T>[keyof PickByValueStrict<Models, T>];
+export type Model<T = never> = [T] extends [never] ? Models[keyof Models] : ValueOf<PickByValueStrict<Models, T>>;
 
 export type Delegates = {
   admin: Prisma.AdminDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
@@ -23,6 +23,12 @@ export type Delegates = {
   revoked: Prisma.RevokedDelegate<DefaultArgs, Prisma.PrismaClientOptions>;
 };
 
-export type Delegate<T = never> = [T] extends [never]
-  ? Delegates[keyof Delegates]
-  : PickByValueStrict<Delegates, T>[keyof PickByValueStrict<Delegates, T>];
+export type Delegate<T = never> = [T] extends [never] ? Delegates[keyof Delegates] : ValueOf<PickByValueStrict<Delegates, T>>;
+
+type ReverseModelMap<T> = T extends any
+  ? {
+      [K in keyof Models]: Models[K] extends T ? K : never;
+    }[keyof Models]
+  : never;
+
+export type InferDelegateByModel<T> = ReverseModelMap<T> extends keyof Delegates ? Delegates[ReverseModelMap<T>] : never;

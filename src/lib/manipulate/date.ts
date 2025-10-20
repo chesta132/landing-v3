@@ -1,4 +1,5 @@
 import dayjs, { Dayjs } from "dayjs";
+import { timeInMs } from "./number";
 
 type FormatDateOptions = { includeThisYear?: boolean; includeHour?: boolean };
 /**
@@ -82,4 +83,8 @@ export const normalizeDates = <T extends Record<string, any> | any[]>(
     }
   }
   return sanitized as any;
+};
+
+export const generateDeleteAtTTL = () => {
+  return new Date(Date.now() + timeInMs({ week: 2 }));
 };
