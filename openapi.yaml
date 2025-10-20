@@ -300,7 +300,6 @@ paths:
               schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
 
   # Auth
-
   /auth/sign-up:
     post:
       summary: Create admin account ⚠️CREATE PROFILE FIRST
@@ -370,16 +369,15 @@ paths:
           content:
             application/json:
               schema: { $ref: "#/components/schemas/ErrorResponseEnvelope" }
-  /auth/sign-in/confirmed:
-    post:
-      summary: Confirm session login for CONFIRMATION auth
+    get:
+      summary: Check session login for CONFIRMATION auth
       parameters:
         - name: session
           in: query
           schema: { type: string }
       responses:
         200:
-          description: Check is session has been verified. If true, admin have to direct to dashboard
+          description: Check whether the session has been verified. If true, admin have to direct to dashboard
           content:
             application/json:
               schema:
