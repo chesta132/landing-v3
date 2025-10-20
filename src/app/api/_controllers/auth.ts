@@ -18,6 +18,7 @@ export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 export abstract class AuthController {
   static neededBodySignin = ["email", "password", "rememberMe"];
   static neededBodySignup = ["email", "password", "rememberMe", "name"];
+  static neededBodySigninByOtp = ["type", "session"];
 
   static async signin(req: ApiRequest<SigninPayload, never, never>, { reply }: ApiResponse<SigninResponse>) {
     const { email, password, rememberMe } = req.body;

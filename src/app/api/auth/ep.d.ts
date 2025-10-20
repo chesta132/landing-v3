@@ -7,7 +7,8 @@ declare module "@/types/endpoints" {
         | BuildEndpoint<"/auth/sign-up", typeof AuthController.signup>
         | BuildEndpoint<"/auth/sign-in", typeof AuthController.signin>
         | BuildEndpoint<"/auth/sign-in/otp", typeof AuthController.signinByOtp>
-        | BuildEndpoint<"/auth/sign-in/confirm", typeof AuthController.signinByConfirm>;
+        | BuildEndpoint<"/auth/sign-in/confirm", typeof AuthController.confirmSignin>
+        | BuildEndpoint<"/auth/sign-in/confirmed", typeof AuthController.signinByConfirm>;
     }
   }
   interface Endpoints extends Endpoints.Auth {}
