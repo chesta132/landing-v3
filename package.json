@@ -17,6 +17,7 @@
     "jsonwebtoken": "^9.0.2",
     "next": "15.5.5",
     "nodemailer": "^7.0.9",
+    "pluralize": "^8.0.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "ua-parser-js": "^2.0.6"
@@ -28,6 +29,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20",
     "@types/nodemailer": "^7.0.2",
+    "@types/pluralize": "^0.0.33",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "prisma": "^6.17.1",

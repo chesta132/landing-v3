@@ -7,7 +7,7 @@ export type BodyableMethods = "POST" | "PUT" | "DELETE" | "PATCH";
 
 export interface ApiRequest<Body = any, Param extends string = string & {}, Query extends string = string & {}> extends NextApiRequest {
   body: Body;
-  query: Record<Param | Query, string[] | string | undefined>;
+  query: Record<Query, string[] | string | undefined> & Record<Param, string[] | string>;
 }
 export interface ApiResponse<Data = any> extends NextApiResponse<Data> {
   reply: Reply<Data>;
