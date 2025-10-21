@@ -16,9 +16,9 @@ export abstract class SocialController {
   static readonly routeOptions = {
     create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
     update: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
-    updateMany: { bodyValidator: z.object({ provider: z.string(), url: z.string(), id: z.string() }), bodyArray: true },
-    softDeleteMany: { bodyValidator: z.object({ id: z.string() }), bodyArray: true },
-    restoreMany: { bodyValidator: z.object({ id: z.string() }), bodyArray: true },
+    updateMany: { bodyValidator: z.array(z.object({ provider: z.string(), url: z.string(), id: z.string() })) },
+    softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
+    restoreMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(req: ApiRequest<never, "id", never>, { reply }: ApiResponse<Social>) {

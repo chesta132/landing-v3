@@ -5,10 +5,10 @@ import { NextApiRequest, NextApiResponse } from "next";
 import { validatePayload } from "./validate";
 import { handleServerError } from "../error/handleServerError";
 import { authMiddleware } from "@/app/api/_middlewares/auth";
-import z, { ZodObject } from "zod";
+import { ZodArray, ZodObject } from "zod";
 import { pick } from "../manipulate/object";
 
-export type CreateRouteOptionsBase = { bodyValidator?: ZodObject; bodyArray?: boolean };
+export type CreateRouteOptionsBase = { bodyValidator?: ZodObject | ZodArray<ZodObject> };
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
   recover?: Recoverer;
 };
@@ -76,16 +76,16 @@ export abstract class Route {
       try {
         const { req, res } = await this.injectReply(request, response);
 
-        const { bodyValidator, bodyArray } = (options && options[req.method as BodyableMethods]) || {};
+        const { bodyValidator } = (options && options[req.method as BodyableMethods]) || {};
 
         if (bodyValidator) {
+          const shape = bodyValidator instanceof ZodArray ? bodyValidator.element.shape : bodyValidator.shape;
           req.body = Object.isObject(req.body)
-            ? pick(req.body, bodyValidator.keyof().options)
+            ? pick(req.body, Object.keys(shape))
             : Array.isArray(req.body)
-            ? req.body.map((b) => pick(b, bodyValidator.keyof().options))
+            ? req.body.map((b) => pick(b, Object.keys(shape)))
             : req.body;
-          const validator = bodyArray ? z.array(bodyValidator) : bodyValidator;
-          validatePayload(validator, req.body);
+          validatePayload(bodyValidator, req.body);
         }
 
         const handler = handlers[req.method as AllowedMethods];
