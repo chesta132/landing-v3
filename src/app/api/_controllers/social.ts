@@ -1,4 +1,6 @@
 import { PAGINATION_LIMIT } from "@/config";
+import { record } from "@/lib/manipulate/object";
+import { parsePaginationQuery } from "@/lib/server/query";
 import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
@@ -8,15 +10,17 @@ import pluralize from "pluralize";
 import z from "zod";
 
 export type CreateSocialPayload = { provider: string; url: string };
-export type UpdateSocialPayload = { provider: string; url: string };
+export type UpdateSocialPayload = { provider?: string; url?: string };
 export type UpdateManySocialPayload = (UpdateSocialPayload & { id: string })[];
 export type SoftDeleteManySocialPayload = { id: string }[];
 
 export abstract class SocialController {
+  private static UPDATABLE_FIELDS = ["provider", "url"] satisfies (keyof UpdateSocialPayload)[];
+
   static readonly routeOptions = {
     create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
-    update: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
-    updateMany: { bodyValidator: z.array(z.object({ provider: z.string(), url: z.string(), id: z.string() })) },
+    update: { bodyValidator: z.object(record(this.UPDATABLE_FIELDS, z.string().nullish())) },
+    updateMany: { bodyValidator: z.array(z.object({ ...record(this.UPDATABLE_FIELDS, z.string().nullish()), id: z.string() })) },
     softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
     restoreMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
   } satisfies Record<string, CreateRouteOptionsBase>;
@@ -27,13 +31,11 @@ export abstract class SocialController {
   }
 
   static async getMany(req: ApiRequest<never, never, "offset" | "sortBy" | "sort" | "isRecycled">, { reply }: ApiResponse<Social[]>) {
-    const { offset, sort: querySort, sortBy, isRecycled: queryIsRecycled } = req.query;
-    const limit = PAGINATION_LIMIT;
-    const skip = Number(offset?.toString()) || 0;
-    const sort = typeof sortBy === "string" ? { [sortBy]: querySort === "asc" ? querySort : "desc" } : undefined;
-    const isRecycled = typeof queryIsRecycled === "string" ? JSON.safeParse<boolean>(queryIsRecycled, false) : false;
+    const { offset, sort, sortBy, isRecycled: queryIsRecycled } = req.query;
+    const { limit, skip, orderBy } = parsePaginationQuery({ offset, sort, sortBy });
+    const isRecycled = typeof queryIsRecycled === "string" ? JSON.safeParse(queryIsRecycled, { fallback: false }) : false;
 
-    const social = await crud.getMany(prisma.social, { isRecycled }, { orderBy: sort, take: limit, skip });
+    const social = await crud.getMany(prisma.social, { isRecycled }, { orderBy, take: limit, skip });
     reply.success(social).respond();
   }
 

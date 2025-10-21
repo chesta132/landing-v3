@@ -1,4 +1,4 @@
-import { pick } from "@/lib/manipulate/object";
+import { pick, record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
 import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
@@ -9,12 +9,17 @@ import { Admin, Profile } from "@prisma/client";
 import z from "zod";
 
 export type CreateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
-export type UpdateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
+export type UpdateProfilePayload = Partial<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">>;
 
 export abstract class ProfileController {
   static readonly routeOptions = {
-    update: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },
-    create: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },
+    update: { bodyValidator: z.object(record(["bio", "avatarUrl", "name", "location"], z.string().nullish())) },
+    create: {
+      bodyValidator: z.object({
+        ...record(["bio", "avatarUrl", "name"], z.string()),
+        location: z.string().nullish(),
+      }),
+    },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(_: ApiRequest<never, never, never>, { reply }: ApiResponse<Profile>) {
