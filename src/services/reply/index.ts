@@ -4,14 +4,14 @@ import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "./error/type";
 import { NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
-import { CookieUserBase, DataToResponse, ErrorResponseType, ResType, ReplyOptions } from "./type";
+import { CookieUserBase, Response, ErrorResponseType, ResType, ReplyOptions } from "./type";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { cookies } from "next/headers";
 import { ApiResponse } from "@/types/server";
 
-const defaultPayload = <T>(): DataToResponse<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
+const defaultPayload = <T>(): Response<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 
 const statusAlias: {
   code: CodeError[];
@@ -36,7 +36,7 @@ type ReplyConstructorOptions = { cookieStore: ReadonlyRequestCookies };
  * Provides utilities for standardized success/error responses and extra features.
  */
 export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, ErrorReady extends boolean = false> {
-  private _jsonPayload: DataToResponse<typeof this._body | typeof this._errorBody> = defaultPayload();
+  private _jsonPayload: Response<typeof this._body | typeof this._errorBody, boolean> = defaultPayload();
   private _res: NextApiResponse;
   private _cookie: ReadonlyRequestCookies;
 

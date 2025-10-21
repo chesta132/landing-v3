@@ -27,17 +27,20 @@ export interface RestError extends Omit<ErrorResponseType, "message" | "code"> {
 /**
  * Standard response envelope.
  */
-export interface DataToResponse<T> {
+export interface Response<T, Success extends boolean = boolean> {
   meta: {
     /** Status of response (SUCCESS/ERROR) */
-    status: "ERROR" | "SUCCESS";
-    /** Indicates whether there is next data (for pagination) */
-    hasNext?: boolean;
-    /** Next offset for pagination */
-    nextOffset?: number | null;
-    /** Optional information message */
-    information?: string;
-  };
+    status: Success extends true ? "SUCCESS" : "ERROR";
+  } & (Success extends true
+    ? {
+        /** Indicates whether there is next data (for pagination) */
+        hasNext?: boolean;
+        /** Next offset for pagination */
+        nextOffset?: number | null;
+        /** Optional information message */
+        information?: string;
+      }
+    : never);
   /** Response payload data */
   data: T;
 }
