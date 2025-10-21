@@ -32,25 +32,40 @@ export const omit = <T extends Record<string, any>, Z extends (keyof T)[] = []>(
   return omittedData;
 };
 
+type RecordReturn<T extends Record<string, any> | string[], Z> = T extends string[] ? Record<T[number], Z> : Record<keyof T, Z>;
 /**
- * Creates a new object with the same keys as the given object,
+ * Creates a new object with the same keys as the given data,
  * but all values replaced with a fixed type/value.
  *
- * @param data - Original object to get the keys from
+ * @param data - Array of strings or object to get the keys from
  * @param recordType - The value or type to assign to each key
- * @returns A new object where each key of `data` has the same value `recordType`
+ * @returns A new object where each key has the same value `recordType`
  *
  * @example
  * ```ts
+ * // From array
+ * const arr = ['foo', 'bar', 'baz'] as const;
+ * const rec1 = record(arr, 0); // { foo: number; bar: number; baz: number }
+ * // rec1 = { foo: 0, bar: 0, baz: 0 }
+ *
+ * // From object
  * const obj = { foo: 1, bar: "yo" };
- * const rec = record(obj, false);
- * // rec: { foo: boolean; bar: boolean } = { foo: false, bar: false }
+ * const rec2 = record(obj, false); // { foo: boolean; bar: boolean }
+ * // rec2 = { foo: false, bar: false }
  * ```
  */
-export const record = <T extends Record<string, any>, Z>(data: T, recordType: Z) => {
-  const buildedData = { ...data } as Record<keyof T, Z>;
-  Object.keys(buildedData).forEach((key: keyof T) => {
-    buildedData[key] = recordType;
-  });
-  return buildedData;
-};
+export function record<K extends string, T extends Record<K, any> | K[], Z>(data: T, recordType: Z): RecordReturn<T, Z> {
+  if (Array.isArray(data)) {
+    const builded = {} as Record<(typeof data)[number], Z>;
+    data.forEach((k: keyof typeof builded) => {
+      builded[k] = recordType;
+    });
+    return builded as any;
+  } else {
+    const builded = { ...data } as Record<string, any>;
+    Object.keys(builded).forEach((key) => {
+      builded[key] = recordType;
+    });
+    return builded as any;
+  }
+}
