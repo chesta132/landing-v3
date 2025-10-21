@@ -1,3 +1,4 @@
+import { Response } from "@/services/reply/type";
 import { AllowedMethods, ApiRequest, ApiResponse, Handler } from "@/types/server";
 
 type DefaultRootEndpoint = Record<Lowercase<AllowedMethods>, never>;
@@ -11,10 +12,10 @@ namespace Endpoints {
 interface Endpoints {}
 
 export type Endpoint = { path: string; param: string; response: any; query: Record<string, any>; body: any };
-export type BuildEndpoint<E extends string, H extends Handler> = H extends (
+export type BuildEndpoint<E extends string, H extends Handler, Success = true> = H extends (
   req: ApiRequest<infer B, infer P, infer Q>,
   res: ApiResponse<infer R>,
   ...rest: any[]
 ) => Promise<void> | void
-  ? { path: E; param: P; response: R; query: Q; body: B }
+  ? { path: E; param: P; response: Response<R, Success>; query: Q; body: B }
   : never;

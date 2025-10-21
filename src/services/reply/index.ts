@@ -4,14 +4,14 @@ import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "./error/type";
 import { NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
-import { CookieUserBase, Response, ErrorResponseType, ResType, ReplyOptions } from "./type";
+import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./type";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { cookies } from "next/headers";
 import { ApiResponse } from "@/types/server";
 
-const defaultPayload = <T>(): Response<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
+const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 
 const statusAlias: {
   code: CodeError[];
@@ -36,12 +36,12 @@ type ReplyConstructorOptions = { cookieStore: ReadonlyRequestCookies };
  * Provides utilities for standardized success/error responses and extra features.
  */
 export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, ErrorReady extends boolean = false> {
-  private _jsonPayload: Response<typeof this._body | typeof this._errorBody, boolean> = defaultPayload();
+  private _jsonPayload: Replied<typeof this._body | typeof this._errorBody, boolean> = defaultPayload();
   private _res: NextApiResponse;
   private _cookie: ReadonlyRequestCookies;
 
   private _body?: SuccessType | SuccessType[];
-  private _errorBody?: ErrorResponseType;
+  private _errorBody?: ErrorReplyType;
   private _accessToken?: string;
   private _refreshToken?: string;
   private _rememberMe?: boolean;
@@ -85,7 +85,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
    * @param error Data for error response
    * @returns this
    */
-  body<T extends OneFieldOnly<{ success: SuccessType; error: ErrorResponseType }>>({ success, error }: T) {
+  body<T extends OneFieldOnly<{ success: SuccessType; error: ErrorReplyType }>>({ success, error }: T) {
     if (success) this._body = success;
     if (error) this._errorBody = pick(error, ["code", "details", "field", "message", "status", "title"]);
     return this as unknown as T extends { success: infer S }
@@ -118,10 +118,10 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
    * reply.error({ code: "NOT_FOUND", message: "User not found", status: 404 }).fail();
    * ```
    *
-   * @param data The error object conforming to ErrorResponseType
+   * @param data The error object conforming to ErrorReplyType
    * @returns this
    */
-  error(data: ErrorResponseType) {
+  error(data: ErrorReplyType) {
     return this.body({ error: data });
   }
 
@@ -395,7 +395,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
   }) as any;
 
   /**
-   * Send an error response using ErrorResponseType.
+   * Send an error response using ErrorReplyType.
    *
    * @example
    * ```ts

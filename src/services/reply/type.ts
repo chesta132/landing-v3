@@ -7,7 +7,7 @@ export type Fields = any;
 /**
  * Structure of an error response payload.
  */
-export interface ErrorResponseType {
+export interface ErrorReplyType {
   /** Unique error code */
   code: CodeError;
   /** Human-readable message */
@@ -22,12 +22,12 @@ export interface ErrorResponseType {
   status?: number;
 }
 
-export interface RestError extends Omit<ErrorResponseType, "message" | "code"> {}
+export interface RestError extends Omit<ErrorReplyType, "message" | "code"> {}
 
 /**
  * Standard response envelope.
  */
-export interface Response<T, Success extends boolean = boolean> {
+export interface Replied<T, Success extends boolean = boolean> {
   meta: {
     /** Status of response (SUCCESS/ERROR) */
     status: Success extends true ? "SUCCESS" : "ERROR";
