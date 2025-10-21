@@ -1,20 +1,29 @@
 import { pick } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
+import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ServerError } from "@/services/server-error";
 import { ApiRequest, ApiResponse } from "@/types/server";
 import { Admin, Profile } from "@prisma/client";
+import z from "zod";
+
+export type CreateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
+export type UpdateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
 
 export abstract class ProfileController {
   static neededBody = ["bio", "avatarUrl", "name"];
+  static readonly routeOptions = {
+    update: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },
+    create: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },
+  } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(_: ApiRequest<never, never, never>, { reply }: ApiResponse<Profile>) {
     const profile = await crud.getOne(prisma.profile, {});
     reply.success(profile).respond();
   }
 
-  static async create(req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, never, never>, { reply }: ApiResponse<Profile>) {
+  static async create(req: ApiRequest<CreateProfilePayload, never, never>, { reply }: ApiResponse<Profile>) {
     await crud.getOne(
       prisma.profile,
       {},
@@ -30,11 +39,7 @@ export abstract class ProfileController {
       .created();
   }
 
-  static async update(
-    req: ApiRequest<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">, "id", never>,
-    { reply }: ApiResponse<Profile>,
-    _: Admin
-  ) {
+  static async update(req: ApiRequest<UpdateProfilePayload, "id", never>, { reply }: ApiResponse<Profile>, _: Admin) {
     const id = req.query.id as string;
 
     const update = pick(req.body || {}, ["bio", "avatarUrl", "name", "location"]);

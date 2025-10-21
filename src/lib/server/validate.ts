@@ -1,6 +1,6 @@
 import { ServerError } from "@/services/server-error";
 import { spacing } from "../manipulate/string";
-import { ZodObject } from "zod";
+import { ZodArray, ZodObject } from "zod";
 
 /** @deprecated Use validatePayload instead */
 export const validateRequires = (neededField: string[], from: any) => {
@@ -30,7 +30,7 @@ export const validateRequires = (neededField: string[], from: any) => {
   }
 };
 
-export const validatePayload = (schema: ZodObject, from: any) => {
+export const validatePayload = (schema: ZodObject | ZodArray, from: any) => {
   const valid = schema.safeParse(from);
   if (valid.error) {
     const missingFields = valid.error.issues

@@ -1,9 +1,11 @@
 import { PAGINATION_LIMIT } from "@/config";
+import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ApiRequest, ApiResponse } from "@/types/server";
 import { Admin, Social } from "@prisma/client";
 import pluralize from "pluralize";
+import z from "zod";
 
 export type CreateSocialPayload = { provider: string; url: string };
 export type UpdateSocialPayload = { provider: string; url: string };
@@ -15,6 +17,13 @@ export abstract class SocialController {
   static neededBodyToUpdate: (keyof UpdateSocialPayload)[] = ["provider", "url"];
   static neededBodyToUpdateMany: (keyof UpdateManySocialPayload[number])[] = ["provider", "url", "id"];
   static neededBodyToSoftDeleteMany: (keyof SoftDeleteManySocialPayload[number])[] = ["id"];
+  static readonly routeOptions = {
+    create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
+    update: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
+    updateMany: { bodyValidator: z.object({ provider: z.string(), url: z.string(), id: z.string() }), bodyArray: true },
+    softDeleteMany: { bodyValidator: z.object({ id: z.string() }), bodyArray: true },
+    restoreMany: { bodyValidator: z.object({ id: z.string() }), bodyArray: true },
+  } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(req: ApiRequest<never, "id", never>, { reply }: ApiResponse<Social>) {
     const social = await crud.getById(prisma.social, req.query.id as string);

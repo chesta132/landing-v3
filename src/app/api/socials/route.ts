@@ -9,8 +9,8 @@ export default Route.create(
     DELETE: SocialController.softDeleteMany,
   },
   {
-    POST: { neededBody: SocialController.neededBodyToCreate },
-    PUT: { neededBody: SocialController.neededBodyToUpdateMany },
-    DELETE: { neededBody: SocialController.neededBodyToSoftDeleteMany },
+    POST: SocialController.routeOptions.create,
+    PUT: SocialController.routeOptions.updateMany,
+    DELETE: SocialController.routeOptions.softDeleteMany,
   }
 );

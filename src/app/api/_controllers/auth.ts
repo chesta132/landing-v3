@@ -1,5 +1,6 @@
 import { decrypt, encrypt } from "@/lib/crypto";
 import { timeInMs } from "@/lib/manipulate/number";
+import { CreateRouteOptionsBase } from "@/lib/server/route";
 import { AuthService, AuthVerificationInfo } from "@/services/auth";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
@@ -9,6 +10,7 @@ import { ApiRequest, ApiResponse } from "@/types/server";
 import { $Enums, Admin } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { UAParser } from "ua-parser-js";
+import z from "zod";
 
 export type SigninPayload = Pick<Admin, "email" | "password"> & { rememberMe: boolean };
 export type SignupPayload = Pick<Admin, "email" | "password" | "name"> & { rememberMe: boolean };
@@ -19,6 +21,11 @@ export abstract class AuthController {
   static neededBodySignin = ["email", "password", "rememberMe"];
   static neededBodySignup = ["email", "password", "rememberMe", "name"];
   static neededBodySigninByOtp = ["type", "session"];
+  static readonly routeOptions = {
+    signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }) },
+    signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }) },
+    sigininByOtp: { bodyValidator: z.object({ type: z.email(), session: z.string() }) },
+  } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async signin(req: ApiRequest<SigninPayload, never, never>, { reply }: ApiResponse<SigninResponse>) {
     const { email, password, rememberMe } = req.body;

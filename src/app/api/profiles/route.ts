@@ -6,5 +6,5 @@ export default Route.create(
     GET: ProfileController.get,
     POST: ProfileController.create,
   },
-  { POST: ProfileController }
+  { POST: ProfileController.routeOptions.create }
 );
