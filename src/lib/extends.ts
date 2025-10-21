@@ -9,9 +9,11 @@ JSON.isJSON = function (text) {
   }
 };
 
-JSON.safeParse = function <T>(text?: string | Falsy, fallback?: T) {
+JSON.safeParse = function <T>(text?: string | Falsy, { strict = true, fallback }: { strict?: boolean; fallback?: T } = {}) {
   try {
-    return this.parse(text || "invalid");
+    const parsed = this.parse(text || "invalid");
+    if (strict && typeof parsed !== typeof fallback) return fallback;
+    return parsed;
   } catch {
     return fallback;
   }

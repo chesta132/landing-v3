@@ -28,15 +28,19 @@ interface JSON {
    * Returns the parsed value if valid, or the given fallback value if parsing fails.
    *
    * @param text - The JSON string to parse.
+   *
    * @param fallback - The value to return if parsing fails (default: undefined).
+   * @param strict - Switch wether strict or not (default: true).
    * @returns The parsed value if valid JSON, otherwise the fallback.
    *
    * @example
-   * JSON.safeParse('{"a":1}') // { a: 1 }
-   * JSON.safeParse<number>("123", 0) // 123
-   * JSON.safeParse<number>("not-a-number", 0) // 0
+   * JSON.safeParse('{"a": 1}') // { a: 1 }
+   * JSON.safeParse<number>("123", { fallback: 0 }) // 123
+   * JSON.safeParse<number>('{"a": 1}', { fallback: 0 }) // 0
+   * JSON.safeParse<number>("not-a-number", { fallback: 0 }) // 0
+   * JSON.safeParse<number>('{"a": 1}', { fallback: 0, strict: false }) // { a: 1 }
    */
-  safeParse: <T = any>(text: string | Falsy, fallback?: T, options?: { mergeWithFallback?: boolean }) => T;
+  safeParse: <T = unknown>(text: string | Falsy, options?: { strict?: boolean; fallback?: T }) => T;
 }
 
 interface ObjectConstructor {
