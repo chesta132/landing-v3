@@ -2,13 +2,13 @@ import { createReply } from "@/services/reply";
 import { ServerError } from "@/services/server-error";
 import { AllowedMethods, ApiRequest, ApiResponse, BodyableMethods, Handler, Handlers, Recoverer } from "@/types/server";
 import { NextApiRequest, NextApiResponse } from "next";
-import { validatePayload, validateRequires } from "./validate";
+import { validatePayload } from "./validate";
 import { handleServerError } from "../error/handleServerError";
 import { authMiddleware } from "@/app/api/_middlewares/auth";
 import z, { ZodObject } from "zod";
 import { pick } from "../manipulate/object";
 
-export type CreateRouteOptionsBase = { neededBody?: string[]; bodyValidator?: ZodObject; bodyArray?: boolean };
+export type CreateRouteOptionsBase = { bodyValidator?: ZodObject; bodyArray?: boolean };
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
   recover?: Recoverer;
 };
@@ -76,9 +76,8 @@ export abstract class Route {
       try {
         const { req, res } = await this.injectReply(request, response);
 
-        const { neededBody, bodyValidator, bodyArray } = (options && options[req.method as BodyableMethods]) || {};
+        const { bodyValidator, bodyArray } = (options && options[req.method as BodyableMethods]) || {};
 
-        if (neededBody) validateRequires(neededBody, req.body);
         if (bodyValidator) {
           req.body = Object.isObject(req.body)
             ? pick(req.body, bodyValidator.keyof().options)

@@ -12,7 +12,6 @@ export type CreateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | 
 export type UpdateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
 
 export abstract class ProfileController {
-  static neededBody = ["bio", "avatarUrl", "name"];
   static readonly routeOptions = {
     update: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },
     create: { bodyValidator: z.object({ bio: z.string(), avatarUrl: z.string(), name: z.string(), location: z.string().nullish() }) },

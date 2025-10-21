@@ -18,9 +18,6 @@ export type SigninByOtpPayload = { otp: string; session: string };
 export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 
 export abstract class AuthController {
-  static neededBodySignin = ["email", "password", "rememberMe"];
-  static neededBodySignup = ["email", "password", "rememberMe", "name"];
-  static neededBodySigninByOtp = ["type", "session"];
   static readonly routeOptions = {
     signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }) },
     signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }) },

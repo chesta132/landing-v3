@@ -13,10 +13,6 @@ export type UpdateManySocialPayload = (UpdateSocialPayload & { id: string })[];
 export type SoftDeleteManySocialPayload = { id: string }[];
 
 export abstract class SocialController {
-  static neededBodyToCreate: (keyof CreateSocialPayload)[] = ["provider", "url"];
-  static neededBodyToUpdate: (keyof UpdateSocialPayload)[] = ["provider", "url"];
-  static neededBodyToUpdateMany: (keyof UpdateManySocialPayload[number])[] = ["provider", "url", "id"];
-  static neededBodyToSoftDeleteMany: (keyof SoftDeleteManySocialPayload[number])[] = ["id"];
   static readonly routeOptions = {
     create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
     update: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
