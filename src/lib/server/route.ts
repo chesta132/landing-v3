@@ -2,11 +2,13 @@ import { createReply } from "@/services/reply";
 import { ServerError } from "@/services/server-error";
 import { AllowedMethods, ApiRequest, ApiResponse, BodyableMethods, Handler, Handlers, Recoverer } from "@/types/server";
 import { NextApiRequest, NextApiResponse } from "next";
-import { validateRequires } from "./validate";
+import { validatePayload, validateRequires } from "./validate";
 import { handleServerError } from "../error/handleServerError";
 import { authMiddleware } from "@/app/api/_middlewares/auth";
+import { ZodObject } from "zod";
+import { pick } from "../manipulate/object";
 
-export type CreateRouteOptionsBase = { neededBody?: string[] };
+export type CreateRouteOptionsBase = { neededBody?: string[]; bodyValidator?: ZodObject };
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
   recover?: Recoverer;
 };
@@ -74,11 +76,16 @@ export abstract class Route {
       try {
         const { req, res } = await this.injectReply(request, response);
 
-        const { neededBody } = (options && options[req.method as BodyableMethods]) || {};
-        if (req.body) {
-          if (neededBody) validateRequires(neededBody, req.body);
-        } else if (neededBody) {
-          throw new ServerError("CLIENT_TYPE", { field: "body", details: "Body must available" });
+        const { neededBody, bodyValidator } = (options && options[req.method as BodyableMethods]) || {};
+
+        if (neededBody) validateRequires(neededBody, req.body);
+        if (bodyValidator) {
+          req.body = Object.isObject(req.body)
+            ? pick(req.body, bodyValidator.keyof().options)
+            : Array.isArray(req.body)
+            ? req.body.map((b) => pick(b, bodyValidator.keyof().options))
+            : req.body;
+          validatePayload(bodyValidator, req.body);
         }
 
         const handler = handlers[req.method as AllowedMethods];

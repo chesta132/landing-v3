@@ -66,7 +66,7 @@ console.debugTable = function (tabularData, properties, trace) {
   this.table(tabularData, properties);
 };
 
-Object.isObject = function <T>(object: T) {
+Object.isObject = function (object: unknown): object is Record<string, any> {
   if (typeof object === "object" && object !== null && !(object instanceof Date)) return true;
   return false;
 };

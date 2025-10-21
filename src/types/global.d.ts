@@ -60,7 +60,7 @@ interface ObjectConstructor {
    *
    * @returns Boolean of prop is object or not
    */
-  isObject<T extends object>(object: T): boolean;
+  isObject<T>(object: T): object is Record<string, any>;
 
   /**
    * Object.typedEntries dengan typing yang lebih strict.
