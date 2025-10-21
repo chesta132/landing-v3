@@ -12,7 +12,12 @@ JSON.isJSON = function (text) {
 JSON.safeParse = function <T>(text?: string | Falsy, { strict = true, fallback }: { strict?: boolean; fallback?: T } = {}) {
   try {
     const parsed = this.parse(text || "invalid");
-    if (strict && typeof parsed !== typeof fallback) return fallback;
+    if (strict) {
+      if (Array.isArray(parsed) !== Array.isArray(fallback)) return fallback;
+      if (fallback === null && parsed !== fallback) return fallback;
+      if (fallback instanceof Date !== parsed instanceof Date) return fallback;
+      if (typeof parsed !== typeof fallback) return fallback;
+    }
     return parsed;
   } catch {
     return fallback;

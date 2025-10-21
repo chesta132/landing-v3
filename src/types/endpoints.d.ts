@@ -1,9 +1,12 @@
 import { AllowedMethods, ApiRequest, ApiResponse, Handler } from "@/types/server";
 
+type DefaultRootEndpoint = Record<Lowercase<AllowedMethods>, never>;
+
 namespace Endpoints {
-  interface Profile extends Record<Lowercase<AllowedMethods>, never> {}
-  interface Auth extends Record<Lowercase<AllowedMethods>, never> {}
-  interface Social extends Record<Lowercase<AllowedMethods>, never> {}
+  interface Profile extends DefaultRootEndpoint {}
+  interface Auth extends DefaultRootEndpoint {}
+  interface Social extends DefaultRootEndpoint {}
+  interface Project extends DefaultRootEndpoint {}
 }
 interface Endpoints {}
 
