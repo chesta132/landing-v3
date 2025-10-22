@@ -4,12 +4,18 @@ import { NextApiRequest, NextApiResponse } from "next";
 
 export type AllowedMethods = "POST" | "GET" | "PUT" | "DELETE" | "PATCH";
 export type BodyableMethods = "POST" | "PUT" | "DELETE" | "PATCH";
+
+export type RequiredQueryValue = string[] | string;
 export type QueryValue = string[] | string | undefined;
 export type ParamValue = string[] | string;
 
-export interface ApiRequest<Body = any, Param extends string = string & {}, Query extends string = string & {}> extends NextApiRequest {
+export interface ApiRequest<Body = any, Param extends Record<string, any> = never, Query extends Record<string, any> = never>
+  extends NextApiRequest {
   body: Body;
-  query: Record<Query, QueryValue> & Record<Param, ParamValue>;
+  query: ([Query] extends [never]
+    ? {}
+    : Record<keyof PickByValue<Query, undefined>, QueryValue> & Record<keyof OmitByValue<Query, undefined>, RequiredQueryValue>) &
+    ([Param] extends [never] ? {} : Record<keyof Param, ParamValue>);
 }
 export interface ApiResponse<Data = any> extends NextApiResponse<Data> {
   reply: Reply<Data>;

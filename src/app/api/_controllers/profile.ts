@@ -7,9 +7,7 @@ import { ServerError } from "@/services/server-error";
 import { ApiRequest, ApiResponse } from "@/types/server";
 import { Admin, Profile } from "@prisma/client";
 import z from "zod";
-
-export type CreateProfilePayload = Pick<Profile, "bio" | "avatarUrl" | "name" | "location">;
-export type UpdateProfilePayload = Partial<Pick<Profile, "bio" | "avatarUrl" | "name" | "location">>;
+import { ProfilePayload } from "../_payloads/profile";
 
 export abstract class ProfileController {
   static readonly routeOptions = {
@@ -27,7 +25,7 @@ export abstract class ProfileController {
     reply.success(profile).respond();
   }
 
-  static async create(req: ApiRequest<CreateProfilePayload, never, never>, { reply }: ApiResponse<Profile>) {
+  static async create(req: ApiRequest<ProfilePayload.CreateBody, never, never>, { reply }: ApiResponse<Profile>) {
     await crud.getOne(
       prisma.profile,
       {},
@@ -43,7 +41,7 @@ export abstract class ProfileController {
       .created();
   }
 
-  static async update(req: ApiRequest<UpdateProfilePayload, "id", never>, { reply }: ApiResponse<Profile>, _: Admin) {
+  static async update(req: ApiRequest<ProfilePayload.UpdateBody, ProfilePayload.SingleParam, never>, { reply }: ApiResponse<Profile>, _: Admin) {
     const id = req.query.id as string;
 
     const update = pick(req.body || {}, ["bio", "avatarUrl", "name", "location"]);
@@ -51,11 +49,15 @@ export abstract class ProfileController {
     reply.success(profile).info(`${profile.name} successfully updated.`).respond();
   }
 
-  static async delete(req: ApiRequest<never, "id", "token">, { reply }: ApiResponse<Profile>, _: Admin) {
-    const { id, token } = req.query as Record<"id" | "token", string>;
+  static async delete(req: ApiRequest<never, ProfilePayload.SingleParam, ProfilePayload.DeleteQuery>, { reply }: ApiResponse<Profile>, _: Admin) {
+    const { id, token } = req.query;
 
-    await crud.getOne(prisma.verification, { type: "OTP_ACTION", secret: token }, { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } });
-    const deleted = await crud.deleteById(prisma.profile, id);
+    await crud.getOne(
+      prisma.verification,
+      { type: "OTP_ACTION", secret: token.toString() },
+      { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } }
+    );
+    const deleted = await crud.deleteById(prisma.profile, id.toString());
 
     reply.success(deleted).info(`${deleted.name} successfully deleted.`).respond();
   }

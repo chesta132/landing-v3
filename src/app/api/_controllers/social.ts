@@ -8,14 +8,10 @@ import { ApiRequest, ApiResponse } from "@/types/server";
 import { Admin, Social } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-
-export type CreateSocialPayload = { provider: string; url: string };
-export type UpdateSocialPayload = { provider?: string; url?: string };
-export type UpdateManySocialPayload = (UpdateSocialPayload & { id: string })[];
-export type SoftDeleteManySocialPayload = { id: string }[];
+import { SocialPayload } from "../_payloads/social";
 
 export abstract class SocialController {
-  private static UPDATABLE_FIELDS = ["provider", "url"] satisfies (keyof UpdateSocialPayload)[];
+  private static UPDATABLE_FIELDS = ["provider", "url"] satisfies (keyof SocialPayload.UpdateBody)[];
 
   static readonly routeOptions = {
     create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
@@ -25,12 +21,12 @@ export abstract class SocialController {
     restoreMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
-  static async get(req: ApiRequest<never, "id", never>, { reply }: ApiResponse<Social>) {
+  static async get(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>) {
     const social = await crud.getById(prisma.social, req.query.id as string);
     reply.success(social).respond();
   }
 
-  static async getMany(req: ApiRequest<never, never, "offset" | "sortBy" | "sort" | "isRecycled">, { reply }: ApiResponse<Social[]>) {
+  static async getMany(req: ApiRequest<never, never, SocialPayload.GetManyQuery>, { reply }: ApiResponse<Social[]>) {
     const { offset, sort, sortBy, isRecycled: queryIsRecycled } = req.query;
     const { limit, skip, orderBy } = parsePaginationQuery({ offset, sort, sortBy });
     const isRecycled = typeof queryIsRecycled === "string" ? JSON.safeParse(queryIsRecycled, { fallback: false }) : false;
@@ -39,21 +35,21 @@ export abstract class SocialController {
     reply.success(social).respond();
   }
 
-  static async create(req: ApiRequest<CreateSocialPayload, never, never>, { reply }: ApiResponse<Social>, _: Admin) {
+  static async create(req: ApiRequest<SocialPayload.CreateBody, never, never>, { reply }: ApiResponse<Social>, _: Admin) {
     const { provider, url } = req.body;
     const profile = await crud.getOne(prisma.profile, {});
     const social = await crud.createOne(prisma.social, { provider, url, profileId: profile.id });
     reply.success(social).info(`New ${social.provider} social created`).respond();
   }
 
-  static async update(req: ApiRequest<UpdateSocialPayload, "id", never>, { reply }: ApiResponse<Social>, _: Admin) {
+  static async update(req: ApiRequest<SocialPayload.UpdateBody, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
     const { provider, url } = req.body;
     const id = req.query.id as string;
     const social = await crud.updateById(prisma.social, id, { provider, url });
     reply.success(social).info(`${social.provider} social updated`).respond();
   }
 
-  static async updateMany(req: ApiRequest<UpdateManySocialPayload, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
+  static async updateMany(req: ApiRequest<SocialPayload.UpdateManyBody, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
     const socials = await prisma.$transaction(
       req.body.map(({ id, provider, url }) => prisma.social.update({ where: { id }, data: { provider, url } }))
     );
@@ -63,13 +59,13 @@ export abstract class SocialController {
       .respond();
   }
 
-  static async softDelete(req: ApiRequest<never, "id", never>, { reply }: ApiResponse<Social>, _: Admin) {
+  static async softDelete(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
     const id = req.query.id as string;
     const social = await crud.softDeleteById(prisma.social, id);
     reply.success(social).info(`${social.provider} social deleted`).respond();
   }
 
-  static async softDeleteMany(req: ApiRequest<SoftDeleteManySocialPayload, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
+  static async softDeleteMany(req: ApiRequest<SocialPayload.SoftDeleteManyBody, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
     const ids = req.body.map((b) => b.id);
     const socials = await crud.softDeleteMany(prisma.social, { id: { in: ids } });
     reply
@@ -78,13 +74,13 @@ export abstract class SocialController {
       .respond();
   }
 
-  static async restore(req: ApiRequest<never, "id", never>, { reply }: ApiResponse<Social>, _: Admin) {
+  static async restore(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
     const id = req.query.id as string;
     const social = await crud.restoreById(prisma.social, id);
     reply.success(social).info(`${social.provider} social restored`).respond();
   }
 
-  static async restoreMany(req: ApiRequest<SoftDeleteManySocialPayload, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
+  static async restoreMany(req: ApiRequest<SocialPayload.RestoreManyBody, never, never>, { reply }: ApiResponse<Social[]>, _: Admin) {
     const ids = req.body.map((b) => b.id);
     const socials = await crud.restoreMany(prisma.social, { id: { in: ids } });
     reply

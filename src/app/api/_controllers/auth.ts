@@ -11,10 +11,8 @@ import { $Enums, Admin } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { UAParser } from "ua-parser-js";
 import z from "zod";
+import { AuthPayload } from "../_payloads/auth";
 
-export type SigninPayload = Pick<Admin, "email" | "password"> & { rememberMe: boolean };
-export type SignupPayload = Pick<Admin, "email" | "password" | "name"> & { rememberMe: boolean };
-export type SigninByOtpPayload = { otp: string; session: string };
 export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 
 export abstract class AuthController {
@@ -24,7 +22,7 @@ export abstract class AuthController {
     sigininByOtp: { bodyValidator: z.object({ type: z.email(), session: z.string() }) },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
-  static async signin(req: ApiRequest<SigninPayload, never, never>, { reply }: ApiResponse<SigninResponse>) {
+  static async signin(req: ApiRequest<AuthPayload.SigninBody, never, never>, { reply }: ApiResponse<SigninResponse>) {
     const { email, password, rememberMe } = req.body;
     const ua = new UAParser(req.headers["user-agent"]).getResult();
 
@@ -47,7 +45,7 @@ export abstract class AuthController {
     reply.success({ type: admin.auth, session: encrypt(session) }).respond();
   }
 
-  static async signup(req: ApiRequest<SignupPayload, never, never>, { reply }: ApiResponse<Admin>) {
+  static async signup(req: ApiRequest<AuthPayload.SignupBody, never, never>, { reply }: ApiResponse<Admin>) {
     const { email, name, password, rememberMe } = req.body;
     const profile = await crud.getOne(
       prisma.profile,
@@ -67,8 +65,8 @@ export abstract class AuthController {
     reply.success(admin).setCookie({ template: "REFRESH_ACCESS", rememberMe }).respond();
   }
 
-  static async confirmSignin(req: ApiRequest<never, never, "secret">, { reply }: ApiResponse<"SUCCESS">) {
-    const parsed = AuthService.parseSecret(req.query.secret as string);
+  static async confirmSignin(req: ApiRequest<never, never, AuthPayload.ConfirmSigninQuery>, { reply }: ApiResponse<"SUCCESS">) {
+    const parsed = AuthService.parseSecret(req.query.secret.toString());
     if (!parsed) {
       throw new ServerError("CLIENT_TYPE", { field: "secret" });
     }
@@ -84,7 +82,7 @@ export abstract class AuthController {
     reply.success("SUCCESS").respond();
   }
 
-  static async signinByOtp(req: ApiRequest<SigninByOtpPayload, never, never>, { reply }: ApiResponse<Admin>) {
+  static async signinByOtp(req: ApiRequest<AuthPayload.SigninByOtpBody, never, never>, { reply }: ApiResponse<Admin>) {
     const { otp } = req.body;
     const session = decrypt(req.body.session) || "";
     const startsWith = `otp=${otp}`;
@@ -105,8 +103,8 @@ export abstract class AuthController {
     reply.success(admin).setCookie({ template: "REFRESH_ACCESS", rememberMe }).respond();
   }
 
-  static async signinByConfirm(req: ApiRequest<never, never, "session">, { reply }: ApiResponse<Admin>) {
-    const session = decrypt(req.query.session as string) || "";
+  static async signinByConfirm(req: ApiRequest<never, never, AuthPayload.SigninByConfirmQuery>, { reply }: ApiResponse<Admin>) {
+    const session = decrypt(req.query.session.toString()) || "";
 
     const verif = await crud.getOne(
       prisma.verification,
