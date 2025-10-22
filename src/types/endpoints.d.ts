@@ -1,4 +1,4 @@
-import { Response } from "@/services/reply/type";
+import { Replied } from "@/services/reply/type";
 import { AllowedMethods, ApiRequest, ApiResponse, Handler } from "@/types/server";
 
 type DefaultRootEndpoint = Record<Lowercase<AllowedMethods>, never>;
@@ -18,5 +18,5 @@ export type BuildEndpoint<E extends string, H extends Handler, Success = true> =
   res: ApiResponse<infer R>,
   ...rest: any[]
 ) => Promise<void> | void
-  ? { path: E; param: P; response: Response<R, Success>; query: Q; body: B }
+  ? { path: E; param: P; response: Replied<R, Success>; query: Q; body: B }
   : never;
