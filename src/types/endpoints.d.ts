@@ -8,6 +8,7 @@ namespace Endpoints {
   interface Auth extends DefaultRootEndpoint {}
   interface Social extends DefaultRootEndpoint {}
   interface Project extends DefaultRootEndpoint {}
+  interface Tech extends DefaultRootEndpoint {}
 }
 interface Endpoints {}
 
