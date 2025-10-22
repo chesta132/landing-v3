@@ -1,4 +1,3 @@
-import { PAGINATION_LIMIT } from "@/config";
 import { record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
 import { parsePaginationQuery } from "@/lib/server/query";
@@ -6,21 +5,36 @@ import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ApiRequest, ApiResponse } from "@/types/server";
-import { Admin, Project } from "@prisma/client";
+import { $Enums, Admin, Project, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
 
-export type CreateProjectPayload = { description: string; title: string; demoUrl?: string; thumbnail?: string };
+export type CreateProjectPayload = {
+  description: string;
+  title: string;
+  demoUrl?: string;
+  thumbnail?: string;
+  tech?: { name: string; type: $Enums.TechType; url: string }[];
+};
 export type UpdateProjectPayload = { description?: string; title?: string; demoUrl?: string; thumbnail?: string };
 export type UpdateManyProjectPayload = (UpdateProjectPayload & { id: string })[];
 export type SoftDeleteManyProjectPayload = { id: string }[];
+type ProjectWithTech = Project & {
+  techStack: Tech[];
+};
 
 export abstract class ProjectController {
   private static UPDATABLE_FIELDS = ["title", "description", "demoUrl", "thumbnail"] satisfies (keyof UpdateProjectPayload)[];
 
   static readonly routeOptions = {
     create: {
-      bodyValidator: z.object({ title: z.string(), description: z.string(), demoUrl: z.string().nullish(), thumbnail: z.string().nullish() }),
+      bodyValidator: z.object({
+        title: z.string(),
+        description: z.string(),
+        demoUrl: z.string().nullish(),
+        thumbnail: z.string().nullish(),
+        tech: z.object({ name: z.string(), type: z.enum(Object.typedValues($Enums.TechType)), url: z.string() }).nullish(),
+      }),
     },
     update: {
       bodyValidator: z.object(record(this.UPDATABLE_FIELDS, z.string().nullish())),
@@ -46,10 +60,16 @@ export abstract class ProjectController {
     reply.success(project).respond();
   }
 
-  static async create(req: ApiRequest<CreateProjectPayload, never, never>, { reply }: ApiResponse<Project>, _: Admin) {
-    const { description, title, demoUrl, thumbnail } = req.body;
+  static async create(req: ApiRequest<CreateProjectPayload, never, never>, { reply }: ApiResponse<ProjectWithTech>, _: Admin) {
+    const { description, title, demoUrl, thumbnail, tech } = req.body;
     const profile = await crud.getOne(prisma.profile, {});
-    const project = await crud.createOne(prisma.project, { profileId: profile.id, description, title, demoUrl, thumbnail });
+    const project = (await crud.createOne(prisma.project, { profileId: profile.id, description, title, demoUrl, thumbnail })) as ProjectWithTech;
+    if (tech) {
+      const data = tech.map(({ name, type, url }) => ({ name, type, url, projectId: project.id }));
+      project.techStack = await crud.createManyAndReturn(prisma.tech, data);
+    } else {
+      project.techStack = [];
+    }
     reply.success(project).info(`New ${project.title} created`).respond();
   }
 
