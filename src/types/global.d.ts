@@ -40,7 +40,11 @@ interface JSON {
    * JSON.safeParse<number>("not-a-number", { fallback: 0 }) // 0
    * JSON.safeParse<number>('{"a": 1}', { fallback: 0, strict: false }) // { a: 1 }
    */
-  safeParse: <T = unknown>(text: string | Falsy, options?: { strict?: boolean; fallback?: T }) => T;
+  safeParse: <T = unknown>(text: string | Falsy | Stringified<T>, options?: { strict?: boolean; fallback?: T }) => T;
+
+  parse<T = any>(text: string | Stringified<T>, reviver?: (this: any, key: string, value: any) => any): T;
+  stringify<T>(value: T, replacer?: (this: any, key: string, value: any) => any, space?: string | number): Stringified<T>;
+  stringify<T>(value: T, replacer?: (number | string)[] | null, space?: string | number): Stringified<T>;
 }
 
 interface ObjectConstructor {
@@ -186,3 +190,10 @@ type MergeUnion<U> = (U extends any ? (k: U) => void : never) extends (k: infer 
 
 /** Value of `T` */
 type ValueOf<T> = T[keyof T];
+
+/** Custom brand for Stringified type */
+declare namespace StringifiedBrand {
+  const brand: unique symbol;
+}
+/** Converted JavaScript valid syntax to string */
+type Stringified<T> = string & { [StringifiedBrand.brand]: T };
