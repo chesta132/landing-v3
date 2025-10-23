@@ -7,6 +7,7 @@ import { handleServerError } from "../error/handleServerError";
 import { authMiddleware } from "@/app/api/_middlewares/auth";
 import { ZodArray, ZodObject } from "zod";
 import { pick } from "../manipulate/object";
+import queryString from "query-string";
 
 export type CreateRouteOptionsBase = { bodyValidator?: ZodObject | ZodArray<ZodObject> };
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
@@ -87,6 +88,11 @@ export abstract class Route {
             : req.body;
           validatePayload(bodyValidator, req.body);
         }
+        // Type cast query
+        req.query = queryString.parse(queryString.stringify(req.query), {
+          parseBooleans: true,
+          parseNumbers: true,
+        });
 
         const handler = handlers[req.method as AllowedMethods];
         if (handler) {

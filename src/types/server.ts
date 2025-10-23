@@ -9,13 +9,9 @@ export type RequiredQueryValue = string[] | string;
 export type QueryValue = string[] | string | undefined;
 export type ParamValue = string[] | string;
 
-export interface ApiRequest<Body = any, Param extends Record<string, any> = never, Query extends Record<string, any> = never>
-  extends NextApiRequest {
+export interface ApiRequest<Body = any, Param extends Record<string, any> = never, Query extends Record<string, any> = never> extends NextApiRequest {
   body: Body;
-  query: ([Query] extends [never]
-    ? {}
-    : Record<keyof PickByValue<Query, undefined>, QueryValue> & Record<keyof OmitByValue<Query, undefined>, RequiredQueryValue>) &
-    ([Param] extends [never] ? {} : Record<keyof Param, ParamValue>);
+  query: ([Query] extends [never] ? {} : Query) & ([Param] extends [never] ? {} : Param);
 }
 export interface ApiResponse<Data = any> extends NextApiResponse<Data> {
   reply: Reply<Data>;
