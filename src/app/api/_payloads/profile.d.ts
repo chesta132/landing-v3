@@ -1,13 +1,16 @@
 import { Profile } from "@prisma/client";
+import { infer as ZodInfer } from "zod";
+import { ProfileController } from "../_controllers/profile";
 
+declare const { routeOptions } = ProfileController;
 export namespace ProfilePayload {
   // Body
-  type CreateBody = Pick<Profile, "bio" | "avatarUrl" | "name"> & { location?: string };
-  type UpdateBody = Partial<Pick<Profile, "bio" | "avatarUrl" | "name"> & { location?: string }>;
+  type CreateBody = ZodInfer<typeof routeOptions.create.bodyValidator>;
+  type UpdateBody = ZodInfer<typeof routeOptions.update.bodyValidator>;
 
   // Param
-  type SingleParam = { id: string };
+  type SingleParam = ZodInfer<typeof routeOptions.singleParam.paramValidator>;
 
   // Query
-  type DeleteQuery = { token: string };
+  type DeleteQuery = ZodInfer<typeof routeOptions.delete.queryValidator>;
 }

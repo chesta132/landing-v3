@@ -1,12 +1,12 @@
 import { capital } from "@/lib/manipulate/string";
 import { Reply } from "../reply";
 import { Fields, RestError } from "../reply/type";
-import { AllowedMethods } from "@/types/server";
+import { AllowedMethods } from "@/lib/route/types";
 
 export type ServerErrorConfig =
   | { code: "CLIENT_FIELD"; deps: [err: { field: Fields; message: string } & RestError] }
-  | { code: "MISSING_FIELDS"; deps: [err: { field: string } & Omit<RestError, "field">] }
-  | { code: "CLIENT_TYPE"; deps: [err: { field: string; details?: string } & Omit<RestError, "field">] }
+  | { code: "MISSING_FIELDS"; deps: [err: { field: string; on?: string } & Omit<RestError, "field">] }
+  | { code: "CLIENT_TYPE"; deps: [err: { field: string; details?: string; on?: string } & Omit<RestError, "field">] }
   | { code: "INVALID_AUTH"; deps: [err?: RestError] }
   | { code: "INVALID_VERIF_TOKEN"; deps: [err?: Omit<RestError, "field">] }
   | { code: "INVALID_TOKEN"; deps: [err?: RestError] }
@@ -52,14 +52,21 @@ export class ServerError<C extends ServerErrorCode> {
         reply.error({ ...deps[0], field: deps[0].field, message: deps[0].message, code: "CLIENT_FIELD" }).fail();
         break;
       case "MISSING_FIELDS":
-        reply.error({ ...deps[0], title: "Missing Fields", message: `${capital(deps[0].field)} is required`, code: "MISSING_FIELDS" }).fail();
+        reply
+          .error({
+            ...deps[0],
+            title: "Missing Fields",
+            message: `${capital(deps[0].field)} ${deps[0].on ? `on ${deps[0].on} is missing` : "is required"}`,
+            code: "MISSING_FIELDS",
+          })
+          .fail();
         break;
       case "CLIENT_TYPE":
         reply
           .error({
             ...deps[0],
             code: "INVALID_CLIENT_TYPE",
-            message: `Invalid ${deps[0].field} type. ${capital(deps[0].details || "")}`.trim(),
+            message: `Invalid ${deps[0].field} type${deps[0].on ? ` on ${deps[0].on}` : ""}. ${capital(deps[0].details || "")}`.trim(),
             title: "Invalid Type",
           })
           .fail();

@@ -1,16 +1,19 @@
 import { $Enums, Tech } from "@prisma/client";
+import { infer as ZodInfer } from "zod";
+import { TechController } from "../_controllers/tech";
 
+declare const { routeOptions } = TechController;
 export namespace TechPayload {
   // Body
-  type CreateBody = { name: string; type: $Enums.TechType; url: string; projectId: string };
-  type UpdateBody = { name?: string; type?: $Enums.TechType; url?: string };
-  type UpdateManyBody = (UpdateBody & { id: string })[];
-  type SoftDeleteManyBody = { id: string }[];
-  type RestoreManyBody = { id: string }[];
+  type CreateBody = ZodInfer<typeof routeOptions.create.bodyValidator>;
+  type UpdateBody = ZodInfer<typeof routeOptions.update.bodyValidator>;
+  type UpdateManyBody = ZodInfer<typeof routeOptions.updateMany.bodyValidator>;
+  type SoftDeleteManyBody = ZodInfer<typeof routeOptions.softDeleteMany.bodyValidator>;
+  type RestoreManyBody = ZodInfer<typeof routeOptions.restoreMany.bodyValidator>;
 
   // Param
-  type SingleParam = { id: string };
+  type SingleParam = ZodInfer<typeof routeOptions.singleParam.paramValidator>;
 
   // Query
-  type GetManyQuery = { offset?: number; sortBy?: keyof Tech; sort?: "asc" | "desc"; isRecycled?: boolean };
+  type GetManyQuery = ZodInfer<typeof routeOptions.getMany.queryValidator>;
 }

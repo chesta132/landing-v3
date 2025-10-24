@@ -11,3 +11,5 @@ export const crud = {
 } as const;
 
 export default crud;
+
+export const sortValue = ["asc", "desc"] as const;

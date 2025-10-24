@@ -9,7 +9,7 @@ import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } 
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { cookies } from "next/headers";
-import { ApiResponse } from "@/types/server";
+import { ApiResponse } from "@/lib/route/types";
 
 const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 

@@ -1,44 +1,48 @@
 import { record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
-import { parsePaginationQuery } from "@/lib/server/query";
-import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
-import { ApiRequest, ApiResponse } from "@/types/server";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
 import { $Enums, Admin, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
 import { TechPayload } from "../_payloads/tech";
+import { TechEntity } from "@/lib/models/tech";
+import { PAGINATION_LIMIT } from "@/config";
+import { RouteValidator } from "@/lib/route/validator";
 
 export abstract class TechController {
-  private static UPDATABLE_FIELDS = ["name", "type", "url"] satisfies (keyof TechPayload.UpdateBody)[];
   private static typeEnum = z.enum(Object.typedValues($Enums.TechType));
 
   static readonly routeOptions = {
     create: {
-      bodyValidator: z.object({ name: z.string(), type: this.typeEnum, url: z.string() }),
+      bodyValidator: z.object({ name: z.string(), type: this.typeEnum, url: z.string(), projectId: z.string() }).strip(),
     },
     update: {
-      bodyValidator: z.object({ ...record(this.UPDATABLE_FIELDS, z.string().nullish()), type: this.typeEnum }),
+      bodyValidator: z.object({ ...record(TechEntity.UPDATABLE_FIELDS, z.string().optional()), type: this.typeEnum }).strip(),
     },
     updateMany: {
-      bodyValidator: z.array(z.object({ ...record(this.UPDATABLE_FIELDS, z.string().nullish()), type: this.typeEnum, id: z.string() })),
+      bodyValidator: z.array(
+        z.object({ ...record(TechEntity.UPDATABLE_FIELDS, z.string().optional()), type: this.typeEnum, id: z.string() }).strip()
+      ),
     },
-    softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
-    restoreMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
+    softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() }).strip()) },
+    restoreMany: { bodyValidator: z.array(z.object({ id: z.string() }).strip()) },
+    getMany: { queryValidator: RouteValidator.createGetManyValidator(TechEntity.default) },
+    singleParam: { paramValidator: z.object({ id: z.string() }).strip() },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(req: ApiRequest<never, TechPayload.SingleParam, never>, { reply }: ApiResponse<Tech>) {
-    const tech = await crud.getById(prisma.tech, req.query.id as string);
+    const tech = await crud.getById(prisma.tech, req.query.id);
     reply.success(tech).respond();
   }
 
   static async getMany(req: ApiRequest<never, never, TechPayload.GetManyQuery>, { reply }: ApiResponse<Tech[]>) {
-    const { offset, sort, sortBy, isRecycled: queryIsRecycled } = req.query;
-    const { limit, skip, orderBy } = parsePaginationQuery({ offset, sort, sortBy });
-    const isRecycled = typeof queryIsRecycled === "string" ? JSON.safeParse(queryIsRecycled, { fallback: false }) : false;
+    const { offset = 0, sort = "desc", sortBy, isRecycled = false } = req.query;
+    const take = PAGINATION_LIMIT;
+    const orderBy = sortBy && { [sortBy]: sort };
 
-    const tech = await crud.getMany(prisma.tech, { isRecycled }, { orderBy, take: limit, skip });
+    const tech = await crud.getMany(prisma.tech, { isRecycled }, { orderBy, take, skip: offset });
     reply.success(tech).respond();
   }
 
@@ -50,7 +54,7 @@ export abstract class TechController {
 
   static async update(req: ApiRequest<TechPayload.UpdateBody, TechPayload.SingleParam, never>, { reply }: ApiResponse<Tech>, _: Admin) {
     const { name, type, url } = req.body;
-    const id = req.query.id as string;
+    const id = req.query.id;
     const tech = await crud.updateById(prisma.tech, id, { name, type, url });
     reply
       .success(tech)
@@ -69,7 +73,7 @@ export abstract class TechController {
   }
 
   static async softDelete(req: ApiRequest<never, TechPayload.SingleParam, never>, { reply }: ApiResponse<Tech>, _: Admin) {
-    const id = req.query.id as string;
+    const id = req.query.id;
     const tech = await crud.softDeleteById(prisma.tech, id);
     reply
       .success(tech)
@@ -87,7 +91,7 @@ export abstract class TechController {
   }
 
   static async restore(req: ApiRequest<never, TechPayload.SingleParam, never>, { reply }: ApiResponse<Tech>, _: Admin) {
-    const id = req.query.id as string;
+    const id = req.query.id;
     const tech = await crud.restoreById(prisma.tech, id);
     reply
       .success(tech)

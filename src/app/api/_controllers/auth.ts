@@ -1,12 +1,11 @@
 import { decrypt, encrypt } from "@/lib/crypto";
 import { timeInMs } from "@/lib/manipulate/number";
-import { CreateRouteOptionsBase } from "@/lib/server/route";
 import { AuthService, AuthVerificationInfo } from "@/services/auth";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { generateOTP } from "@/services/email/mailer";
 import { ServerError } from "@/services/server-error";
-import { ApiRequest, ApiResponse } from "@/types/server";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
 import { $Enums, Admin } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { UAParser } from "ua-parser-js";
@@ -17,9 +16,11 @@ export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 
 export abstract class AuthController {
   static readonly routeOptions = {
-    signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }) },
-    signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }) },
-    sigininByOtp: { bodyValidator: z.object({ type: z.email(), session: z.string() }) },
+    signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }).strip()  },
+    signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }).strip()  },
+    sigininByOtp: { bodyValidator: z.object({ otp: z.string(), session: z.string() }).strip()  },
+    signinByConfirm: { queryValidator: z.object({ session: z.string() }).strip()  },
+    confirmSignin: { queryValidator: z.object({ secret: z.string() }).strip()  },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async signin(req: ApiRequest<AuthPayload.SigninBody, never, never>, { reply }: ApiResponse<SigninResponse>) {

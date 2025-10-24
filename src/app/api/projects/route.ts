@@ -1,4 +1,4 @@
-import { Route } from "@/lib/server/route";
+import { Route } from "@/lib/route";
 import { ProjectController } from "../_controllers/project";
 
 export default Route.create(

@@ -1,23 +1,26 @@
-import { pick, record } from "@/lib/manipulate/object";
+import { record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
-import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ServerError } from "@/services/server-error";
-import { ApiRequest, ApiResponse } from "@/types/server";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
 import { Admin, Profile } from "@prisma/client";
 import z from "zod";
 import { ProfilePayload } from "../_payloads/profile";
 
 export abstract class ProfileController {
   static readonly routeOptions = {
-    update: { bodyValidator: z.object(record(["bio", "avatarUrl", "name", "location"], z.string().nullish())) },
+    update: { bodyValidator: z.object(record(["bio", "avatarUrl", "name", "location"], z.string().optional())).strip() },
     create: {
-      bodyValidator: z.object({
-        ...record(["bio", "avatarUrl", "name"], z.string()),
-        location: z.string().nullish(),
-      }),
+      bodyValidator: z
+        .object({
+          ...record(["bio", "avatarUrl", "name"], z.string()),
+          location: z.string().optional(),
+        })
+        .strip(),
     },
+    delete: { queryValidator: z.object({ token: z.string() }).strip() },
+    singleParam: { paramValidator: z.object({ id: z.string() }).strip() },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(_: ApiRequest<never, never, never>, { reply }: ApiResponse<Profile>) {
@@ -42,10 +45,9 @@ export abstract class ProfileController {
   }
 
   static async update(req: ApiRequest<ProfilePayload.UpdateBody, ProfilePayload.SingleParam, never>, { reply }: ApiResponse<Profile>, _: Admin) {
-    const id = req.query.id as string;
+    const id = req.query.id;
 
-    const update = pick(req.body || {}, ["bio", "avatarUrl", "name", "location"]);
-    const profile = await crud.updateById(prisma.profile, id, update);
+    const profile = await crud.updateById(prisma.profile, id, req.body);
     reply.success(profile).info(`${profile.name} successfully updated.`).respond();
   }
 

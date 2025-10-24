@@ -1,4 +1,4 @@
-import { Route } from "@/lib/server/route";
+import { Route } from "@/lib/route";
 import { TechController } from "../_controllers/tech";
 
 export default Route.create(

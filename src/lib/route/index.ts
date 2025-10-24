@@ -1,18 +1,20 @@
 import { createReply } from "@/services/reply";
 import { ServerError } from "@/services/server-error";
-import { AllowedMethods, ApiRequest, ApiResponse, BodyableMethods, Handler, Handlers, Recoverer } from "@/types/server";
+import {
+  AllowedMethods,
+  ApiRequest,
+  ApiResponse,
+  BodyableMethods,
+  Handler,
+  Handlers,
+  CreateRouteOptions,
+  ParamValidator,
+  QueryValidator,
+} from "@/lib/route/types";
 import { NextApiRequest, NextApiResponse } from "next";
-import { validatePayload } from "./validate";
 import { handleServerError } from "../error/handleServerError";
 import { authMiddleware } from "@/app/api/_middlewares/auth";
 import { ZodArray, ZodObject } from "zod";
-import { pick } from "../manipulate/object";
-import queryString from "query-string";
-
-export type CreateRouteOptionsBase = { bodyValidator?: ZodObject | ZodArray<ZodObject> };
-export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
-  recover?: Recoverer;
-};
 
 export abstract class Route {
   private static exec = async (handler: Handler, req: ApiRequest, res: ApiResponse) => {
@@ -28,6 +30,26 @@ export abstract class Route {
     const res = await createReply(response);
     const req = request as ApiRequest;
     return { req, res };
+  }
+
+  private static validatePayload(validator: ZodObject | ZodArray, from: any, on: string) {
+    const valid = validator.safeParse(from);
+    if (valid.error) {
+      const missingFields = valid.error.issues
+        .filter((i) => i.code === "invalid_type" && i.path.every((k) => from?.[k] === undefined))
+        .flatMap((i) => i.path);
+      if (missingFields.length >= 1) {
+        throw new ServerError("MISSING_FIELDS", { field: missingFields.join(", "), on });
+      } else {
+        const fields = valid.error.issues.flatMap((i) => i.path);
+        throw new ServerError("CLIENT_TYPE", { field: fields.join(", "), on });
+      }
+    }
+  }
+
+  private static validateQuery(source: ApiRequest["query"], { param, query }: RequireAtLeastOne<{ param: ParamValidator; query: QueryValidator }>) {
+    const validator = (param && query ? param.extend(query.shape) : query ? query : param) as QueryValidator & ParamValidator;
+    this.validatePayload(validator, source, "query");
   }
 
   /**
@@ -77,22 +99,12 @@ export abstract class Route {
       try {
         const { req, res } = await this.injectReply(request, response);
 
-        const { bodyValidator } = (options && options[req.method as BodyableMethods]) || {};
+        const { bodyValidator, paramValidator, queryValidator } = (options && options[req.method as BodyableMethods]) || {};
+        const { paramValidator: globalParamValidator } = options || {};
 
-        if (bodyValidator) {
-          const shape = bodyValidator instanceof ZodArray ? bodyValidator.element.shape : bodyValidator.shape;
-          req.body = Object.isObject(req.body)
-            ? pick(req.body, Object.keys(shape))
-            : Array.isArray(req.body)
-            ? req.body.map((b) => pick(b, Object.keys(shape)))
-            : req.body;
-          validatePayload(bodyValidator, req.body);
-        }
-        // Type cast query
-        req.query = queryString.parse(queryString.stringify(req.query), {
-          parseBooleans: true,
-          parseNumbers: true,
-        });
+        if (bodyValidator) req.body = this.validatePayload(req.body, bodyValidator, "body");
+        if (globalParamValidator) this.validateQuery(req.query, { param: globalParamValidator });
+        if (paramValidator || queryValidator) this.validateQuery(req.query, { param: paramValidator as ParamValidator, query: queryValidator });
 
         const handler = handlers[req.method as AllowedMethods];
         if (handler) {

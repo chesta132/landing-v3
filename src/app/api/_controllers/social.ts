@@ -1,37 +1,37 @@
-import { PAGINATION_LIMIT } from "@/config";
 import { record } from "@/lib/manipulate/object";
-import { parsePaginationQuery } from "@/lib/server/query";
-import { CreateRouteOptionsBase } from "@/lib/server/route";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
-import { ApiRequest, ApiResponse } from "@/types/server";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
 import { Admin, Social } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
 import { SocialPayload } from "../_payloads/social";
+import { PAGINATION_LIMIT } from "@/config";
+import { SocialEntity } from "@/lib/models/social";
+import { RouteValidator } from "@/lib/route/validator";
 
 export abstract class SocialController {
-  private static UPDATABLE_FIELDS = ["provider", "url"] satisfies (keyof SocialPayload.UpdateBody)[];
-
   static readonly routeOptions = {
-    create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }) },
-    update: { bodyValidator: z.object(record(this.UPDATABLE_FIELDS, z.string().nullish())) },
-    updateMany: { bodyValidator: z.array(z.object({ ...record(this.UPDATABLE_FIELDS, z.string().nullish()), id: z.string() })) },
-    softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
-    restoreMany: { bodyValidator: z.array(z.object({ id: z.string() })) },
+    create: { bodyValidator: z.object({ provider: z.string(), url: z.string() }).strip() },
+    update: { bodyValidator: z.object(record(SocialEntity.UPDATABLE_FIELDS, z.string().optional())).strip() },
+    updateMany: { bodyValidator: z.array(z.object({ ...record(SocialEntity.UPDATABLE_FIELDS, z.string().optional()), id: z.string() }).strip()) },
+    softDeleteMany: { bodyValidator: z.array(z.object({ id: z.string() }).strip()) },
+    restoreMany: { bodyValidator: z.array(z.object({ id: z.string() }).strip()) },
+    getMany: { queryValidator: RouteValidator.createGetManyValidator(SocialEntity.default) },
+    singleParam: { paramValidator: z.object({ id: z.string() }) },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async get(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>) {
-    const social = await crud.getById(prisma.social, req.query.id as string);
+    const social = await crud.getById(prisma.social, req.query.id);
     reply.success(social).respond();
   }
 
   static async getMany(req: ApiRequest<never, never, SocialPayload.GetManyQuery>, { reply }: ApiResponse<Social[]>) {
-    const { offset, sort, sortBy, isRecycled: queryIsRecycled } = req.query;
-    const { limit, skip, orderBy } = parsePaginationQuery({ offset, sort, sortBy });
-    const isRecycled = typeof queryIsRecycled === "string" ? JSON.safeParse(queryIsRecycled, { fallback: false }) : false;
+    const { offset = 0, sort = "desc", sortBy, isRecycled = false } = req.query;
+    const take = PAGINATION_LIMIT;
+    const orderBy = sortBy && { [sortBy]: sort };
 
-    const social = await crud.getMany(prisma.social, { isRecycled }, { orderBy, take: limit, skip });
+    const social = await crud.getMany(prisma.social, { isRecycled }, { orderBy, take, skip: offset });
     reply.success(social).respond();
   }
 
@@ -44,7 +44,7 @@ export abstract class SocialController {
 
   static async update(req: ApiRequest<SocialPayload.UpdateBody, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
     const { provider, url } = req.body;
-    const id = req.query.id as string;
+    const id = req.query.id;
     const social = await crud.updateById(prisma.social, id, { provider, url });
     reply.success(social).info(`${social.provider} social updated`).respond();
   }
@@ -60,7 +60,7 @@ export abstract class SocialController {
   }
 
   static async softDelete(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
-    const id = req.query.id as string;
+    const id = req.query.id;
     const social = await crud.softDeleteById(prisma.social, id);
     reply.success(social).info(`${social.provider} social deleted`).respond();
   }
@@ -75,7 +75,7 @@ export abstract class SocialController {
   }
 
   static async restore(req: ApiRequest<never, SocialPayload.SingleParam, never>, { reply }: ApiResponse<Social>, _: Admin) {
-    const id = req.query.id as string;
+    const id = req.query.id;
     const social = await crud.restoreById(prisma.social, id);
     reply.success(social).info(`${social.provider} social restored`).respond();
   }

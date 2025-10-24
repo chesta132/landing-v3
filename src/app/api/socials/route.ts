@@ -1,4 +1,4 @@
-import { Route } from "@/lib/server/route";
+import { Route } from "@/lib/route";
 import { SocialController } from "../_controllers/social";
 
 export default Route.create(

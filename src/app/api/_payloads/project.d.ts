@@ -1,22 +1,19 @@
 import { $Enums, Project } from "@prisma/client";
+import { ProjectController } from "../_controllers/project";
+import { infer as ZodInfer } from "zod";
 
+declare const { routeOptions } = ProjectController;
 export namespace ProjectPayload {
   // Body
-  type CreateBody = {
-    description: string;
-    title: string;
-    demoUrl?: string;
-    thumbnail?: string;
-    tech?: { name: string; type: $Enums.TechType; url: string }[];
-  };
-  type UpdateBody = { description?: string; title?: string; demoUrl?: string; thumbnail?: string };
-  type UpdateManyBody = (UpdateBody & { id: string })[];
-  type SoftDeleteManyBody = { id: string }[];
-  type RestoreManyBody = { id: string }[];
+  type CreateBody = ZodInfer<typeof routeOptions.create.bodyValidator>;
+  type UpdateBody = ZodInfer<typeof routeOptions.update.bodyValidator>;
+  type UpdateManyBody = ZodInfer<typeof routeOptions.updateMany.bodyValidator>;
+  type SoftDeleteManyBody = ZodInfer<typeof routeOptions.softDeleteMany.bodyValidator>;
+  type RestoreManyBody = ZodInfer<typeof routeOptions.restoreMany.bodyValidator>;
 
   // Param
-  type SingleParam = { id: string };
-  
+  type SingleParam = ZodInfer<typeof routeOptions.singleParam.paramValidator>;
+
   // Query
-  type GetManyQuery = { offset?: number; sortBy?: keyof Project; sort?: "asc" | "desc"; isRecycled?: boolean };
+  type GetManyQuery = ZodInfer<typeof routeOptions.getMany.queryValidator>;
 }

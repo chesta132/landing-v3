@@ -1,12 +1,15 @@
 import { Admin } from "@prisma/client";
+import { infer as ZodInfer } from "zod";
+import { AuthController } from "../_controllers/auth";
 
+declare const { routeOptions } = AuthController;
 export namespace AuthPayload {
   // Body
-  type SigninBody = Pick<Admin, "email" | "password"> & { rememberMe: boolean };
-  type SignupBody = Pick<Admin, "email" | "password" | "name"> & { rememberMe: boolean };
-  type SigninByOtpBody = { otp: string; session: string };
+  type SigninBody = ZodInfer<typeof routeOptions.signin.bodyValidator>;
+  type SignupBody = ZodInfer<typeof routeOptions.signup.bodyValidator>;
+  type SigninByOtpBody = ZodInfer<typeof routeOptions.sigininByOtp.bodyValidator>;
 
   // Query
-  type SigninByConfirmQuery = { session: string };
-  type ConfirmSigninQuery = { secret: string };
+  type SigninByConfirmQuery = ZodInfer<typeof routeOptions.signinByConfirm.queryValidator>;
+  type ConfirmSigninQuery = ZodInfer<typeof routeOptions.confirmSignin.queryValidator>;
 }

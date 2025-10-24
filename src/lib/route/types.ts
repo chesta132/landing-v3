@@ -1,6 +1,7 @@
 import { Reply } from "@/services/reply";
 import { Admin } from "@prisma/client";
 import { NextApiRequest, NextApiResponse } from "next";
+import { ZodArray, ZodObject } from "zod";
 
 export type AllowedMethods = "POST" | "GET" | "PUT" | "DELETE" | "PATCH";
 export type BodyableMethods = "POST" | "PUT" | "DELETE" | "PATCH";
@@ -21,3 +22,16 @@ export type Handler = (req: ApiRequest<any & never>, res: ApiResponse<any>, admi
 export type Recoverer = (err: unknown, req: ApiRequest<any & never>, res: ApiResponse<any>) => Promise<void> | void;
 
 export type Handlers = RequireAtLeastOne<Record<AllowedMethods, Handler>>;
+
+export type BodyValidator = ZodObject | ZodArray<ZodObject>;
+export type QueryValidator = ZodObject;
+export type ParamValidator = ZodObject;
+export type CreateRouteOptionsBase = {
+  bodyValidator?: BodyValidator;
+  queryValidator?: QueryValidator;
+  paramValidator?: ParamValidator;
+};
+export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
+  recover?: Recoverer;
+  paramValidator?: ParamValidator;
+};
