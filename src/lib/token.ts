@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { NODE_ENV } from "@/config";
+import { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, NODE_ENV } from "@/config";
 import { timeInMs } from "./manipulate/number";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
@@ -28,16 +28,16 @@ export const refreshTokenSessionOnlyConfig: Omit<ResponseCookie, "name" | "value
 type ExpiresIn = Parameters<typeof jwt.sign>[2]["expiresIn"];
 
 export const createAccessToken = (payload: JwtPayload, expiresIn?: ExpiresIn | null) => {
-  return jwt.sign(payload, process.env.JWT_ACCESS_SECRET!, expiresIn !== null ? { expiresIn: "5m" } : {});
+  return jwt.sign(payload, JWT_ACCESS_SECRET!, expiresIn !== null ? { expiresIn: "5m" } : {});
 };
 
 export const createRefreshToken = (payload: JwtPayload, expiresIn?: ExpiresIn | null) => {
-  return jwt.sign(payload, process.env.JWT_REFRESH_SECRET!, expiresIn !== null ? { expiresIn: "2w" } : {});
+  return jwt.sign(payload, JWT_REFRESH_SECRET!, expiresIn !== null ? { expiresIn: "2w" } : {});
 };
 
 export const verifyAccessToken = (token: string) => {
   try {
-    return jwt.verify(token, process.env.JWT_ACCESS_SECRET!) as JwtPayload;
+    return jwt.verify(token, JWT_ACCESS_SECRET!) as JwtPayload;
   } catch (error) {
     return null;
   }
@@ -45,7 +45,7 @@ export const verifyAccessToken = (token: string) => {
 
 export const verifyRefreshToken = (token: string) => {
   try {
-    return jwt.verify(token, process.env.JWT_REFRESH_SECRET!) as JwtPayload;
+    return jwt.verify(token, JWT_REFRESH_SECRET!) as JwtPayload;
   } catch (error) {
     return null;
   }

@@ -1,6 +1,7 @@
+import { BASE64_SECRET } from "@/config";
 import crypto from "crypto";
 
-const key = Buffer.from(process.env.BASE64_SECRET!, "base64");
+const key = Buffer.from(BASE64_SECRET!, "base64");
 const algorithm = "aes-256-cbc";
 
 /**

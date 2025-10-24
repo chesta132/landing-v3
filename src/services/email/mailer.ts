@@ -1,15 +1,15 @@
 import nodemailer from "nodemailer";
 import { EmailLoginInfo, emailTemplate } from "./template";
 import { capitalEach } from "@/lib/manipulate/string";
-import { CLIENT_URL } from "@/config";
+import { CLIENT_URL, EMAIL_AUTH_PASS, EMAIL_AUTH_USER } from "@/config";
 
 export const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
   secure: false, // true for port 465, false for other ports
   auth: {
-    user: process.env.EMAIL_AUTH_USER,
-    pass: process.env.EMAIL_AUTH_PASS,
+    user: EMAIL_AUTH_USER,
+    pass: EMAIL_AUTH_PASS,
   },
   tls: {
     rejectUnauthorized: false,
