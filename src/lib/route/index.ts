@@ -1,4 +1,3 @@
-import { createReply } from "@/services/reply";
 import { ServerError } from "@/services/server-error";
 import {
   AllowedMethods,
@@ -13,8 +12,9 @@ import {
 } from "@/lib/route/types";
 import { NextApiRequest, NextApiResponse } from "next";
 import { handleServerError } from "../error/handleServerError";
-import { authMiddleware } from "@/app/api/_middlewares/auth";
+import { authMiddleware } from "@/pages/api/_middlewares/auth";
 import { ZodArray, ZodObject } from "zod";
+import { Reply } from "@/services/reply";
 
 export abstract class Route {
   private static exec = async (handler: Handler, req: ApiRequest, res: ApiResponse) => {
@@ -26,13 +26,15 @@ export abstract class Route {
     }
   };
 
-  private static async injectReply(request: NextApiRequest, response: NextApiResponse) {
-    const res = await createReply(response);
+  private static injectReply(request: NextApiRequest, response: NextApiResponse) {
+    const reply = new Reply(request, response);
+    (response as ApiResponse).reply = reply;
+    const res = response as ApiResponse;
     const req = request as ApiRequest;
     return { req, res };
   }
 
-  private static validatePayload(validator: ZodObject | ZodArray, from: any, on: string) {
+  private static validatePayload(from: any, validator: ZodObject | ZodArray, on: string) {
     const valid = validator.safeParse(from);
     if (valid.error) {
       const missingFields = valid.error.issues
@@ -45,11 +47,12 @@ export abstract class Route {
         throw new ServerError("CLIENT_TYPE", { field: fields.join(", "), on });
       }
     }
+    return valid.data;
   }
 
   private static validateQuery(source: ApiRequest["query"], { param, query }: RequireAtLeastOne<{ param: ParamValidator; query: QueryValidator }>) {
     const validator = (param && query ? param.extend(query.shape) : query ? query : param) as QueryValidator & ParamValidator;
-    this.validatePayload(validator, source, "query");
+    return this.validatePayload(source, validator, "query");
   }
 
   /**
@@ -96,20 +99,23 @@ export abstract class Route {
       .map((h) => h[0]) as AllowedMethods[];
 
     return async (request: NextApiRequest, response: NextApiResponse) => {
+      const { req, res } = this.injectReply(request, response);
       try {
-        const { req, res } = await this.injectReply(request, response);
-
-        const { bodyValidator, paramValidator, queryValidator } = (options && options[req.method as BodyableMethods]) || {};
+        let { bodyValidator, paramValidator, queryValidator } = (options && options[req.method as BodyableMethods]) || {};
         const { paramValidator: globalParamValidator } = options || {};
 
         if (bodyValidator) req.body = this.validatePayload(req.body, bodyValidator, "body");
-        if (globalParamValidator) this.validateQuery(req.query, { param: globalParamValidator });
-        if (paramValidator || queryValidator) this.validateQuery(req.query, { param: paramValidator as ParamValidator, query: queryValidator });
+
+        if (globalParamValidator && paramValidator) {
+          paramValidator = paramValidator.extend(globalParamValidator.shape);
+        } else if (globalParamValidator) {
+          req.query = this.validateQuery(req.query, { param: globalParamValidator });
+        } else if (paramValidator || queryValidator) {
+          req.query = this.validateQuery(req.query, { param: paramValidator as ParamValidator, query: queryValidator });
+        }
 
         const handler = handlers[req.method as AllowedMethods];
-        if (handler) {
-          return this.exec(handler, req, res);
-        }
+        if (handler) return await this.exec(handler, req, res);
 
         return new ServerError("METHOD_NOT_ALLOWED", {
           allowed: available,
@@ -117,7 +123,7 @@ export abstract class Route {
         }).exec(res.reply);
       } catch (err) {
         if (options?.recover) return await options.recover(err, request as ApiRequest<any & never>, response as ApiResponse);
-        else return handleServerError(err, (response as ApiResponse).reply);
+        else return handleServerError(err, res.reply);
       }
     };
   }
@@ -143,7 +149,7 @@ export abstract class Route {
    */
   static splitBody(objectHandler: Handler, arrayHandler: Handler) {
     return async (request: NextApiRequest, response: NextApiResponse) => {
-      const { req, res } = await this.injectReply(request, response);
+      const { req, res } = this.injectReply(request, response);
       const type = Array.isArray(req.body) ? "array" : typeof req.body === "object" ? "object" : null;
       if (type === "array") {
         return await this.exec(arrayHandler, req, res);

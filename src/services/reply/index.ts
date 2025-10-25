@@ -2,14 +2,14 @@ import { createAccessToken, createRefreshToken } from "../../lib/token";
 import { timeInMs } from "@/lib/manipulate/number";
 import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "./error/type";
-import { NextApiResponse } from "next";
+import { NextApiRequest, NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
 import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./type";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { ReadonlyRequestCookies } from "next/dist/server/web/spec-extension/adapters/request-cookies";
 import { cookies } from "next/headers";
 import { ApiResponse } from "@/lib/route/types";
+import { serialize } from "cookie";
 
 const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 
@@ -29,8 +29,6 @@ const statusAlias: {
   { code: ["BAD_GATEWAY"], status: 502 },
 ];
 
-type ReplyConstructorOptions = { cookieStore: ReadonlyRequestCookies };
-
 /**
  * Wrapper for NextApiResponse object with method chaining.
  * Provides utilities for standardized success/error responses and extra features.
@@ -38,8 +36,9 @@ type ReplyConstructorOptions = { cookieStore: ReadonlyRequestCookies };
 export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, ErrorReady extends boolean = false> {
   private _jsonPayload: Replied<typeof this._body | typeof this._errorBody, boolean> = defaultPayload();
   private _res: NextApiResponse;
-  private _cookie: ReadonlyRequestCookies;
+  private _req: NextApiRequest;
 
+  private _cookie;
   private _body?: SuccessType | SuccessType[];
   private _errorBody?: ErrorReplyType;
   private _accessToken?: string;
@@ -49,9 +48,33 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
   /**
    * Initialize Template of the original NextApiResponse.
    */
-  constructor(res: NextApiResponse<SuccessType>, { cookieStore }: ReplyConstructorOptions) {
+  constructor(req: NextApiRequest, res: NextApiResponse<SuccessType>) {
     this._res = res;
-    this._cookie = cookieStore;
+    this._req = req;
+    this._cookie = {
+      get: (name: string) => ({ name, value: this._req.cookies[name] || "" }),
+      set: (name: string, value: string, options?: Omit<ResponseCookie, "name" | "value">) => {
+        const cookieString = serialize(name, value, {
+          path: options?.path || "/",
+          domain: options?.domain,
+          httpOnly: options?.httpOnly,
+          secure: options?.secure,
+          sameSite: options?.sameSite as any,
+          maxAge: options?.maxAge,
+          expires: options?.expires === undefined ? undefined : new Date(options?.expires),
+        });
+
+        const existing = this._res.getHeader("Set-Cookie");
+        const cookies = Array.isArray(existing) ? existing : existing ? [String(existing)] : [];
+        this.setHeader("Set-Cookie", [...cookies, cookieString]);
+      },
+      delete: (name: string) => {
+        const cookieString = serialize(name, "", { path: "/", maxAge: 0 });
+        const existing = this._res.getHeader("Set-Cookie");
+        const cookies = Array.isArray(existing) ? existing : existing ? [String(existing)] : [];
+        this.setHeader("Set-Cookie", [...cookies, cookieString]);
+      },
+    };
   }
 
   private _reset() {
@@ -221,6 +244,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
     }
 
     const refreshConfig = this._rememberMe ? refreshTokenConfig : refreshTokenSessionOnlyConfig;
+
     switch (template) {
       case "ACCESS":
         this._cookie.set(ACCESS_TOKEN_KEY, this._accessToken!, accessTokenConfig);
@@ -233,7 +257,9 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
         this._cookie.set(REFRESH_TOKEN_KEY, this._refreshToken!, refreshConfig);
         break;
       default:
-        this._cookie.set(rest as ResponseCookie);
+        if (rest.name && rest.value) {
+          this._cookie.set(rest.name, rest.value, rest);
+        }
     }
 
     this._accessToken = undefined;
@@ -302,17 +328,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
    * @returns A new Reply instance with default internal state
    */
   reset() {
-    const dup = Object.assign({}, this as Reply);
-    const unResetable = ["_cookie", "_res"];
-    for (const key in dup) {
-      if (!key.startsWith("_") || typeof (dup as any)[key] === "function" || unResetable.includes(key)) continue;
-      else if (key === "_jsonPayload") {
-        dup[key] = defaultPayload();
-      } else {
-        (dup as any)[key] = undefined;
-      }
-    }
-    return dup;
+    return new Reply(this._req, this._res);
   }
 
   /**
@@ -420,10 +436,3 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
     this._reset();
   }) as any;
 }
-
-export const createReply = async (res: NextApiResponse) => {
-  const cookieStore = await cookies();
-  const reply = new Reply(res, { cookieStore });
-  (res as ApiResponse).reply = reply;
-  return res as ApiResponse;
-};
