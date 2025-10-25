@@ -3,6 +3,7 @@ import { QueryConditionalPresent, QueryData, QueryError, QueryFilter, QueryOptio
 import { handleDBServiceError } from "@/lib/error/handleDBError";
 import { getDelegateName } from "../../../lib/db";
 import { ServerError } from "@/services/server-error";
+import { omit } from "@/lib/manipulate/object";
 
 const base = async (model: Delegate, query: () => any, options: QueryOptions<any, any> | undefined) => {
   try {
@@ -22,14 +23,14 @@ export const updateOne = <T extends Delegate, E extends QueryError>(
   filter: QueryFilter<T["update"]>,
   data: QueryData<T["update"]>,
   options?: QueryOptions<T["update"], E>
-): Promise<QueryResult<T["update"], E>> => base(model, () => (model.update as Function)({ where: filter, data, ...options }), options);
+): Promise<QueryResult<T["update"], E>> => base(model, () => (model.update as Function)({ where: filter, data, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const updateMany = <T extends Delegate, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["updateMany"]>,
   data: QueryData<T["updateMany"]>,
   options?: QueryOptions<T["updateMany"], E>
-): Promise<QueryResult<T["updateMany"], E>> => base(model, () => (model.updateMany as Function)({ where: filter, data, ...options }), options);
+): Promise<QueryResult<T["updateMany"], E>> => base(model, () => (model.updateMany as Function)({ where: filter, data, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const updateManyAndReturn = <T extends Delegate, E extends QueryError>(
   model: T,
@@ -37,32 +38,32 @@ export const updateManyAndReturn = <T extends Delegate, E extends QueryError>(
   data: QueryData<T["updateManyAndReturn"]>,
   options?: QueryOptions<T["updateManyAndReturn"], E>
 ): Promise<QueryResult<T["updateManyAndReturn"], E>> =>
-  base(model, () => (model.updateManyAndReturn as Function)({ where: filter, data, ...options }), options);
+  base(model, () => (model.updateManyAndReturn as Function)({ where: filter, data, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const updateById = <T extends Delegate, E extends QueryError>(
   model: T,
   id: string,
   data: QueryData<T["update"]>,
   options?: QueryOptions<T["update"], E>
-): Promise<QueryResult<T["update"], E>> => base(model, () => (model.update as Function)({ where: { id }, data, ...options }), options);
+): Promise<QueryResult<T["update"], E>> => base(model, () => (model.update as Function)({ where: { id }, data, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const restoreOne = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["update"]>,
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> =>
-  base(model, () => (model.update as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...options }), options);
+  base(model, () => (model.update as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const restoreById = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   id: string,
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> =>
-  base(model, () => (model.update as Function)({ where: { id }, data: { isRecycled: false, deleteAt: null }, ...options }), options);
+  base(model, () => (model.update as Function)({ where: { id }, data: { isRecycled: false, deleteAt: null }, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const restoreMany = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["updateManyAndReturn"]>,
   options?: QueryOptions<T["updateManyAndReturn"], E>
 ): Promise<QueryResult<T["updateManyAndReturn"], E>> =>
-  base(model, () => (model.updateManyAndReturn as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...options }), options);
+  base(model, () => (model.updateManyAndReturn as Function)({ where: filter, data: { isRecycled: false, deleteAt: null }, ...omit((options || {}) as any, ["error"]) }), options);

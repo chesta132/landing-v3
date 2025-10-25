@@ -4,6 +4,7 @@ import { handleDBServiceError } from "@/lib/error/handleDBError";
 import { getDelegateName } from "../../../lib/db";
 import { ServerError } from "@/services/server-error";
 import { generateDeleteAtTTL } from "@/lib/manipulate/date";
+import { omit } from "@/lib/manipulate/object";
 
 const base = async (model: Delegate, query: () => any, options: QueryOptions<any, any> | undefined) => {
   try {
@@ -22,33 +23,54 @@ export const deleteOne = <T extends Delegate, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["delete"]>,
   options?: QueryOptions<T["delete"], E>
-): Promise<QueryResult<T["delete"], E>> => base(model, () => (model.delete as Function)({ where: filter, ...options }), options);
+): Promise<QueryResult<T["delete"], E>> =>
+  base(model, () => (model.delete as Function)({ where: filter, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const deleteMany = <T extends Delegate, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["deleteMany"]>,
   options?: QueryOptions<T["deleteMany"], E>
-): Promise<QueryResult<T["deleteMany"], E>> => base(model, () => (model.deleteMany as Function)({ where: filter, ...options }), options);
+): Promise<QueryResult<T["deleteMany"], E>> =>
+  base(model, () => (model.deleteMany as Function)({ where: filter, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const deleteById = <T extends Delegate, E extends QueryError>(
   model: T,
   id: string,
   options?: QueryOptions<T["delete"], E>
-): Promise<QueryResult<T["delete"], E>> => base(model, () => (model.delete as Function)({ where: { id }, ...options }), options);
+): Promise<QueryResult<T["delete"], E>> =>
+  base(model, () => (model.delete as Function)({ where: { id }, ...omit((options || {}) as any, ["error"]) }), options);
 
 export const softDelete = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   filter: QueryFilter<T["update"]>,
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> =>
-  base(model, () => (model.update as Function)({ where: filter, data: { isRecycled: true, deleteAt: generateDeleteAtTTL() }, ...options }), options);
+  base(
+    model,
+    () =>
+      (model.update as Function)({
+        where: filter,
+        data: { isRecycled: true, deleteAt: generateDeleteAtTTL() },
+        ...omit((options || {}) as any, ["error"]),
+      }),
+    options
+  );
 
 export const softDeleteById = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
   id: string,
   options?: QueryOptions<T["update"], E>
 ): Promise<QueryResult<T["update"], E>> =>
-  base(model, () => (model.update as Function)({ where: { id }, data: { isRecycled: true, deleteAt: generateDeleteAtTTL() }, ...options }), options);
+  base(
+    model,
+    () =>
+      (model.update as Function)({
+        where: { id },
+        data: { isRecycled: true, deleteAt: generateDeleteAtTTL() },
+        ...omit((options || {}) as any, ["error"]),
+      }),
+    options
+  );
 
 export const softDeleteMany = <T extends SoftDeleteable, E extends QueryError>(
   model: T,
@@ -57,6 +79,11 @@ export const softDeleteMany = <T extends SoftDeleteable, E extends QueryError>(
 ): Promise<QueryResult<T["updateManyAndReturn"], E>> =>
   base(
     model,
-    () => (model.updateManyAndReturn as Function)({ where: filter, data: { isRecycled: true, deleteAt: generateDeleteAtTTL() }, ...options }),
+    () =>
+      (model.updateManyAndReturn as Function)({
+        where: filter,
+        data: { isRecycled: true, deleteAt: generateDeleteAtTTL() },
+        ...omit((options || {}) as any, ["error"]),
+      }),
     options
   );
