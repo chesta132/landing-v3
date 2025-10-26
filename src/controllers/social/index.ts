@@ -1,14 +1,14 @@
 import { record } from "@/lib/manipulate/object";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
-import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { Admin, Social } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { SocialPayload } from "../_payloads/social";
+import { SocialPayload } from "../../pages/api/_payloads/social";
 import { PAGINATION_LIMIT } from "@/config";
 import { SocialEntity } from "@/lib/models/social";
-import { RouteValidator } from "@/lib/route/validator";
+import { RouteValidator } from "@/services/route/validator";
 
 export abstract class SocialController {
   static readonly routeOptions = {

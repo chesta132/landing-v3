@@ -1,9 +1,9 @@
 import { verifyAccessToken, verifyRefreshToken } from "@/lib/token";
-import { ServerError } from "../../../services/server-error";
-import { ApiRequest, ApiResponse } from "@/lib/route/types";
+import { ServerError } from "../../services/server-error";
+import { ApiRequest, ApiResponse } from "@/services/route/types";
 import { ACCESS_TOKEN_KEY, REFRESH_TOKEN_KEY } from "@/config";
-import crud from "../../../services/db/crud";
-import prisma from "../../../services/db/client";
+import crud from "../../services/db/crud";
+import prisma from "../../services/db/client";
 
 const isRefreshSafe = async (refreshToken: string) => {
   const refreshPayload = verifyRefreshToken(refreshToken);

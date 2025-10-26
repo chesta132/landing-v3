@@ -1,6 +1,6 @@
 import { Social } from "@prisma/client";
 import { infer as ZodInfer } from "zod";
-import { SocialController } from "../_controllers/social";
+import { SocialController } from "../../../controllers/social";
 
 declare const { routeOptions } = SocialController;
 export namespace SocialPayload {

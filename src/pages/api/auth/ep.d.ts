@@ -1,4 +1,4 @@
-import { AuthController } from "../_controllers/auth";
+import { AuthController } from "../../../controllers/auth";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

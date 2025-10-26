@@ -2,15 +2,15 @@ import { record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
-import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { Admin, Project, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { ProjectPayload } from "../_payloads/project";
+import { ProjectPayload } from "../../pages/api/_payloads/project";
 import { ProjectEntity } from "@/lib/models/project";
 import { PAGINATION_LIMIT } from "@/config";
-import { RouteValidator } from "@/lib/route/validator";
-import { TechController } from "./tech";
+import { RouteValidator } from "@/services/route/validator";
+import { TechController } from "../tech";
 
 type ProjectWithTech = Project & {
   techStack: Tech[];

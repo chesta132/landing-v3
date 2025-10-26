@@ -1,4 +1,4 @@
-import { ProjectController } from "@/pages/api/_controllers/project";
-import { Route } from "@/lib/route";
+import { ProjectController } from "@/controllers/project";
+import { Route } from "@/services/route";
 
 export default Route.create({ POST: ProjectController.restore });

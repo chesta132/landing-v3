@@ -1,6 +1,6 @@
 import { $Enums, Tech } from "@prisma/client";
 import { infer as ZodInfer } from "zod";
-import { TechController } from "../_controllers/tech";
+import { TechController } from "../../../controllers/tech";
 
 declare const { routeOptions } = TechController;
 export namespace TechPayload {

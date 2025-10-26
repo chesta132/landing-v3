@@ -1,4 +1,4 @@
-import { CodeError } from "./error/type";
+import { CodeError } from "../server-error/type";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // UNSETTED FIELDS ⚠️

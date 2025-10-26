@@ -1,4 +1,4 @@
-import { SocialController } from "../_controllers/social";
+import { SocialController } from "../../../controllers/social";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

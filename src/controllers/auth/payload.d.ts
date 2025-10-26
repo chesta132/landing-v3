@@ -1,6 +1,6 @@
 import { Admin } from "@prisma/client";
 import { infer as ZodInfer } from "zod";
-import { AuthController } from "../_controllers/auth";
+import { AuthController } from ".";
 
 declare const { routeOptions } = AuthController;
 export namespace AuthPayload {

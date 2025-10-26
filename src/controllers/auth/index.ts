@@ -5,12 +5,12 @@ import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { generateOTP } from "@/services/email/mailer";
 import { ServerError } from "@/services/server-error";
-import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { $Enums, Admin } from "@prisma/client";
 import bcrypt from "bcrypt";
 import { UAParser } from "ua-parser-js";
 import z from "zod";
-import { AuthPayload } from "../_payloads/auth";
+import { AuthPayload } from "./payload";
 
 export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 

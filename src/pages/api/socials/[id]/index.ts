@@ -1,5 +1,5 @@
-import { Route } from "@/lib/route";
-import { SocialController } from "../../_controllers/social";
+import { Route } from "@/services/route";
+import { SocialController } from "../../../../controllers/social";
 
 export default Route.create(
   { GET: SocialController.get, DELETE: SocialController.softDelete, PUT: SocialController.update },

@@ -9,10 +9,10 @@ import {
   CreateRouteOptions,
   ParamValidator,
   QueryValidator,
-} from "@/lib/route/types";
+} from "@/services/route/types";
 import { NextApiRequest, NextApiResponse } from "next";
-import { handleServerError } from "../error/handleServerError";
-import { authMiddleware } from "@/pages/api/_middlewares/auth";
+import { handleServerError } from "../../lib/error/handleServerError";
+import { authMiddleware } from "@/middlewares/api/auth";
 import { ZodArray, ZodObject } from "zod";
 import { Reply } from "@/services/reply";
 

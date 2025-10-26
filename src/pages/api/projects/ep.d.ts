@@ -1,4 +1,4 @@
-import { ProjectController } from "../_controllers/project";
+import { ProjectController } from "../../../controllers/project";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

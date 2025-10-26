@@ -1,5 +1,5 @@
-import { ProfileController } from "../_controllers/profile";
-import { Route } from "@/lib/route";
+import { ProfileController } from "../../../controllers/profile";
+import { Route } from "@/services/route";
 
 export default Route.create(
   {

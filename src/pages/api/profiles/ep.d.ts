@@ -1,4 +1,4 @@
-import { ProfileController } from "../_controllers/profile";
+import { ProfileController } from "../../../controllers/profile";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

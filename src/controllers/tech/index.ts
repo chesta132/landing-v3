@@ -2,14 +2,14 @@ import { record } from "@/lib/manipulate/object";
 import { capital } from "@/lib/manipulate/string";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
-import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { $Enums, Admin, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { TechPayload } from "../_payloads/tech";
+import { TechPayload } from "../../pages/api/_payloads/tech";
 import { TechEntity } from "@/lib/models/tech";
 import { PAGINATION_LIMIT } from "@/config";
-import { RouteValidator } from "@/lib/route/validator";
+import { RouteValidator } from "@/services/route/validator";
 
 export abstract class TechController {
   private static typeEnum = z.enum(Object.typedValues($Enums.TechType));

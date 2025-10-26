@@ -1,5 +1,5 @@
-import { Route } from "@/lib/route";
-import { ProjectController } from "../../_controllers/project";
+import { Route } from "@/services/route";
+import { ProjectController } from "../../../../controllers/project";
 
 export default Route.create(
   { PUT: ProjectController.update, GET: ProjectController.get, DELETE: ProjectController.softDelete },

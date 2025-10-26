@@ -1,14 +1,14 @@
 import { createAccessToken, createRefreshToken } from "../../lib/token";
 import { timeInMs } from "@/lib/manipulate/number";
 import { omit, pick } from "@/lib/manipulate/object";
-import { CodeError } from "./error/type";
+import { CodeError } from "../server-error/type";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
 import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./type";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 import { cookies } from "next/headers";
-import { ApiResponse } from "@/lib/route/types";
+import { ApiResponse } from "@/services/route/types";
 import { serialize } from "cookie";
 
 const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });

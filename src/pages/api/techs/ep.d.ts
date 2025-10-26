@@ -1,4 +1,4 @@
-import { TechController } from "../_controllers/tech";
+import { TechController } from "../../../controllers/tech";
 
 declare module "@/types/endpoints" {
   namespace Endpoints {

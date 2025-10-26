@@ -3,10 +3,10 @@ import { capital } from "@/lib/manipulate/string";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { ServerError } from "@/services/server-error";
-import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/lib/route/types";
+import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { Admin, Profile } from "@prisma/client";
 import z from "zod";
-import { ProfilePayload } from "../_payloads/profile";
+import { ProfilePayload } from "../../pages/api/_payloads/profile";
 
 export abstract class ProfileController {
   static readonly routeOptions = {

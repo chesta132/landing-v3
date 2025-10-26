@@ -1,4 +1,4 @@
-import { Route } from "@/lib/route";
-import { TechController } from "../../_controllers/tech";
+import { Route } from "@/services/route";
+import { TechController } from "../../../../controllers/tech";
 
 export default Route.create({ POST: TechController.restoreMany }, { POST: TechController.routeOptions.restoreMany });

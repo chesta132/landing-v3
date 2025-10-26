@@ -1,7 +1,7 @@
 import { capital } from "@/lib/manipulate/string";
 import { Reply } from "../reply";
 import { Fields, RestError } from "../reply/type";
-import { AllowedMethods } from "@/lib/route/types";
+import { AllowedMethods } from "@/services/route/types";
 
 export type ServerErrorConfig =
   | { code: "CLIENT_FIELD"; deps: [err: { field: Fields; message: string } & RestError] }

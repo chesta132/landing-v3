@@ -1,6 +1,6 @@
 import { Profile } from "@prisma/client";
 import { infer as ZodInfer } from "zod";
-import { ProfileController } from "../_controllers/profile";
+import { ProfileController } from "../../../controllers/profile";
 
 declare const { routeOptions } = ProfileController;
 export namespace ProfilePayload {
