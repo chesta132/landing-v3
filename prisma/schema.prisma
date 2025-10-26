@@ -16,6 +16,7 @@ enum VerificationType {
   CONFIRMATION_AUTH
   OTP_AUTH
   OTP_ACTION
+  CONFIRMATION_ACTION
 }
 
 enum TechType {
@@ -110,10 +111,9 @@ model Verification {
   type    VerificationType
   secret  String
   expires DateTime
-  used    Boolean          @default(false)
   info    String           @default("")
 
-  @@index([type, used])
+  @@index([type])
   @@index([expires])
 }
 

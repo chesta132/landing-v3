@@ -6,7 +6,7 @@ import { ServerError } from "@/services/server-error";
 import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/route/types";
 import { Admin, Profile } from "@prisma/client";
 import z from "zod";
-import { ProfilePayload } from "../../pages/api/_payloads/profile";
+import { ProfilePayload } from "./payload";
 
 export abstract class ProfileController {
   static readonly routeOptions = {

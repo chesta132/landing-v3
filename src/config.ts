@@ -7,6 +7,7 @@ export const {
   EMAIL_AUTH_USER,
   EMAIL_AUTH_PASS,
   BASE64_SECRET,
+  CHARDY_EMAIL,
 } = process.env;
 export const CLIENT_URL = NODE_ENV === "development" ? process.env.CLIENT_URL_DEV : process.env.CLIENT_URL;
 export const PAGINATION_LIMIT = NODE_ENV === "development" ? 100 : 30;

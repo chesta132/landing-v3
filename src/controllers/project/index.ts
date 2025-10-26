@@ -6,7 +6,7 @@ import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/rout
 import { Admin, Project, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { ProjectPayload } from "../../pages/api/_payloads/project";
+import { ProjectPayload } from "./payload";
 import { ProjectEntity } from "@/lib/models/project";
 import { PAGINATION_LIMIT } from "@/config";
 import { RouteValidator } from "@/services/route/validator";

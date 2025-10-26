@@ -5,7 +5,7 @@ import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/rout
 import { Admin, Social } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { SocialPayload } from "../../pages/api/_payloads/social";
+import { SocialPayload } from "./payload";
 import { PAGINATION_LIMIT } from "@/config";
 import { SocialEntity } from "@/lib/models/social";
 import { RouteValidator } from "@/services/route/validator";

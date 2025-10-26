@@ -12,4 +12,5 @@ export namespace AuthPayload {
   // Query
   type SigninByConfirmQuery = ZodInfer<typeof routeOptions.signinByConfirm.queryValidator>;
   type ConfirmSigninQuery = ZodInfer<typeof routeOptions.confirmSignin.queryValidator>;
+  type AllowCreateQuery = ZodInfer<typeof routeOptions.confirmSignin.queryValidator>;
 }

@@ -6,7 +6,7 @@ import { ApiRequest, ApiResponse, CreateRouteOptionsBase } from "@/services/rout
 import { $Enums, Admin, Tech } from "@prisma/client";
 import pluralize from "pluralize";
 import z from "zod";
-import { TechPayload } from "../../pages/api/_payloads/tech";
+import { TechPayload } from "./payload";
 import { TechEntity } from "@/lib/models/tech";
 import { PAGINATION_LIMIT } from "@/config";
 import { RouteValidator } from "@/services/route/validator";

@@ -18,6 +18,7 @@ export const transporter = nodemailer.createTransport({
 
 export const generateOTP = () => Math.floor(1000 + Math.random() * 9000).toString();
 
+/** @deprecated Use `Email` instance instead */
 export const sendOTPEmail = async (email: string, otpCode: string, name: string, loginInfo?: EmailLoginInfo) => {
   try {
     await transporter.sendMail({
@@ -41,6 +42,7 @@ export const sendOTPEmail = async (email: string, otpCode: string, name: string,
 
 /**
  * @param credentials Default is "password"
+ * @deprecated Use `Email` instance instead
  */
 export const sendCredentialChanges = async (email: string, name: string, credentials = "password") => {
   try {
@@ -61,6 +63,7 @@ export const sendCredentialChanges = async (email: string, name: string, credent
   }
 };
 
+/** @deprecated Use `Email` instance instead */
 export const sendAuthConfirmationEmail = async (email: string, secret: string, name: string, loginInfo?: EmailLoginInfo) => {
   try {
     await transporter.sendMail({
@@ -146,7 +149,7 @@ export abstract class Email {
         subject: type === "SIGN_IN" ? "Chardy Login Confirmation" : "Chardy Creates New Admin Account Confirmation",
         html: emailTemplate({
           mode: "verification",
-          title: type === "SIGN_IN" ? "Confirm Your Login" : `Allow ${ellipsis(name, 20)} to create account`,
+          title: type === "SIGN_IN" ? "Confirm Your Login" : `Allow ${ellipsis(name, 10)} to create account`,
           message:
             type === "SIGN_IN"
               ? `Someone just logged into your Chardy account. Please confirm this was you by pressing button bellow.\n\nIf you did not attempt to login, please contact Chardy support immediately.`

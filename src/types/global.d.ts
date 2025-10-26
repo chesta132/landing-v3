@@ -191,9 +191,5 @@ type MergeUnion<U> = (U extends any ? (k: U) => void : never) extends (k: infer 
 /** Value of `T` */
 type ValueOf<T> = T[keyof T];
 
-/** Custom brand for Stringified type */
-declare namespace StringifiedBrand {
-  const brand: unique symbol;
-}
 /** Converted JavaScript valid syntax to string */
-type Stringified<T> = string & { [StringifiedBrand.brand]: T };
+type Stringified<T> = string & { [type: unique symbol]: T };

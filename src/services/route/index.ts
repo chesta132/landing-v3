@@ -72,38 +72,37 @@ export abstract class Route {
   /**
    * Creates a Next.js API route handler with multiple HTTP methods support
    *
-   * @param defaultHandlers - Object containing handler functions for each HTTP method
-   * @param arrayOnBodyHandlers - Optional handlers specifically for array body requests
-   * @param options - Optional per-method config for body validation and error recovery
+   * @param handlers - Object containing handler functions for each HTTP method
+   * @param options - Optional per-method config for `body`|`query`|`param` validation with `zod`, error recovery, and cors
    * @returns Next.js API route handler
    *
    * @description
    * This function automatically:
-   * - Detects body type (array vs object) and routes to appropriate handler
-   * - Validates required body fields if specified in options
+   * - Validates required `body`|`query`|`param` fields if specified in options
    * - Triggers auth middleware when handler has 3+ parameters
    * - Handles errors with custom recoverer or default error handler
+   * - etc
    *
    * @example
    * // Basic usage
-   * export default createRoute({
+   * export default Route.create({
    *   GET: async (req, res) => res.reply.ok({ data: 'hello' }),
    *   POST: async (req, res) => res.reply.created({ data: req.body })
    * });
    *
    * @example
    * // With body validation and error recovery
-   * export default createRoute(
+   * export default Route.create(
    *   { POST: async (req, res) => res.reply.created({ user: req.body }) },
    *   {
-   *     POST: { neededBody: ['email', 'password'] },
-   *     recover: async (err, req, res) => res.reply.internalError('Custom error')
+   *     POST: { bodyValidator: z.object({ email: z.email(), password: z.string() ]}) },
+   *     recover: async (err, req, res) => res.reply.error('Custom error').fail()
    *   }
    * );
    *
    * @example
    * // With auth (3 params triggers authMiddleware)
-   * export default createRoute({
+   * export default Route.create({
    *   DELETE: async (req, res, admin) => res.reply.ok({ deleted: true })
    * });
    */

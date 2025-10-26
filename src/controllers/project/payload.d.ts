@@ -1,5 +1,5 @@
 import { $Enums, Project } from "@prisma/client";
-import { ProjectController } from "../../../controllers/project";
+import { ProjectController } from ".";
 import { infer as ZodInfer } from "zod";
 
 declare const { routeOptions } = ProjectController;
