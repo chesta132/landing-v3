@@ -107,10 +107,10 @@ export abstract class SigninService {
       { secret: { endsWith: `session=${session}` }, type: "CONFIRMATION_AUTH" },
       { error: { notFound: new ServerError("INVALID_VERIF_TOKEN") } }
     );
-    const parsedInfO = JSON.parse(verif.info) as AuthVerificationInfo;
+    const parsedInfo = JSON.parse(verif.info) as AuthVerificationInfo;
     const parsedSecret = AuthService.parseSecret(verif.secret);
-    if (!parsedInfO.verified || !parsedSecret) throw new ServerError("INVALID_VERIF_TOKEN");
+    if (!parsedInfo.verified || !parsedSecret) throw new ServerError("INVALID_VERIF_TOKEN");
 
-    return { parsedInfO, verif, parsedSecret };
+    return { parsedInfo, verif, parsedSecret };
   }
 }

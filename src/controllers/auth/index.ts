@@ -80,12 +80,12 @@ export abstract class AuthController {
   }
 
   static async signinByConfirm(req: ApiRequest<never, never, AuthPayload.SigninByConfirmQuery>, { reply }: ApiResponse<Admin>) {
-    const { parsedInfO, verif, parsedSecret } = await SigninService.getVerifiedByConfirm(req.query.session);
+    const { parsedInfo, verif, parsedSecret } = await SigninService.getVerifiedByConfirm(req.query.session);
 
     const admin = await crud.getById(prisma.admin, parsedSecret.adminId);
 
     await crud.deleteById(prisma.verification, verif.id);
-    reply.success(admin).setCookie({ template: "REFRESH_ACCESS", rememberMe: parsedInfO.rememberMe }).respond();
+    reply.success(admin).setCookie({ template: "REFRESH_ACCESS", rememberMe: parsedInfo.rememberMe }).respond();
   }
 
   static async allowCreate(req: ApiRequest<never, never, AuthPayload.AllowCreateQuery>, { reply }: ApiResponse<"SUCCESS">) {

@@ -200,7 +200,7 @@ export class ServerError<C extends ServerErrorCode> {
         reply.error({ ...deps[0], code: "CONFLICT", message: deps[0].message }).fail();
         break;
       case "INVALID_OTP":
-        reply.error({ ...deps[0], code: "CLIENT_FIELD", message: "Wrong code", field: "otp" });
+        reply.error({ ...deps[0], code: "CLIENT_FIELD", message: "Wrong code", field: "otp" }).fail();
         break;
     }
   }
