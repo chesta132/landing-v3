@@ -18,7 +18,7 @@ interface EmailTemplateProps {
   message: string;
   button?: EmailButton;
   code?: string;
-  codeExpiry?: string;
+  expiry?: string;
   additionalInfo?: string;
   footerText?: string;
   loginInfo?: EmailLoginInfo;
@@ -32,7 +32,7 @@ function emailTemplate({
   message,
   button,
   code,
-  codeExpiry = "10 minutes",
+  expiry = "10 minutes",
   additionalInfo,
   footerText = `© ${new Date().getFullYear()} ${brandName}. All rights reserved.`,
   loginInfo,
@@ -66,7 +66,7 @@ function emailTemplate({
     infoBox = `
       <div class="info-box" style="background: #18181b; border-left: 4px solid #fb923c; padding: 16px 20px; margin: 20px 0; border-radius: 4px;">
         <p style="color: #a1a1aa; margin: 0; font-size: 14px;">
-          <strong style="color: #e4e4e7;">This code expires in ${codeExpiry}.</strong><br>
+          <strong style="color: #e4e4e7;">This code expires in ${expiry}.</strong><br>
           If you didn't request this, you can safely ignore this email.
         </p>
       </div>
@@ -77,7 +77,7 @@ function emailTemplate({
         <p style="color: #a1a1aa; margin: 0; font-size: 14px;">
           ${
             additionalInfo ||
-            '<strong style="color: #e4e4e7;">This link expires in 1 hour.</strong><br>If you didn\'t request this, please ignore this email.'
+            `<strong style="color: #e4e4e7;">This link expires in ${expiry}.</strong><br>If you didn\'t request this, please ignore this email.`
           }
         </p>
       </div>
@@ -228,7 +228,7 @@ function emailTemplate({
     <div class="email-content">
         <div class="logo">${brandName}</div>
         <h2>${title}</h2>
-        <p>${mode === "information" ? (name ? `Hey ${name}!` : "Hey there!") : ""} ${message}</p>
+        <p>${mode === "information" ? greeting : ""} ${message}</p>
         
         ${codeSection}
         ${loginContent}
