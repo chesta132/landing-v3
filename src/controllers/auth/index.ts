@@ -1,6 +1,6 @@
-import { decrypt, encrypt } from "@/lib/crypto";
+import { encrypt } from "@/lib/crypto";
 import { timeInMs } from "@/lib/manipulate/number";
-import { AuthService, AuthVerificationInfo } from "@/services/auth";
+import { AuthService } from "@/services/auth";
 import prisma from "@/services/db/client";
 import crud from "@/services/db/crud";
 import { generateOTP } from "@/services/email/mailer";
