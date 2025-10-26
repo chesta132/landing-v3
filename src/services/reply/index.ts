@@ -3,12 +3,10 @@ import { timeInMs } from "@/lib/manipulate/number";
 import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "../server-error/type";
 import { NextApiRequest, NextApiResponse } from "next";
-import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
+import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, NODE_ENV, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
 import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./type";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { cookies } from "next/headers";
-import { ApiResponse } from "@/services/route/types";
 import { serialize } from "cookie";
 
 const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
@@ -321,7 +319,7 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
    *
    * @example
    * ```ts
-   * const newReply = reply.reset(reply);
+   * const newReply = reply.reset();
    * newReply.body({ success: user }).ok();
    * ```
    *
@@ -427,10 +425,13 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
       const status = errorBody.status ?? statusAlias.find((s) => s.code.includes(errorBody.code))?.status ?? 500;
       if (status >= 500) {
         console.error("\nServer error found and sent successfully:");
+        console.table(errorBody);
       } else {
-        console.warn("\nClient error found and sent successfully:");
+        if (NODE_ENV !== "production") {
+          console.warn("\nClient error found and sent successfully:");
+          console.table(errorBody);
+        }
       }
-      console.table(errorBody);
       this._res.status(status).json(this._jsonPayload);
     }
     this._reset();

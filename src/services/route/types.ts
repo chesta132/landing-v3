@@ -34,4 +34,9 @@ export type CreateRouteOptionsBase = {
 export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
   recover?: Recoverer;
   paramValidator?: ParamValidator;
+  /**
+   * Default is true with domain of client url
+   * @default true
+   */
+  cors?: false | string;
 };

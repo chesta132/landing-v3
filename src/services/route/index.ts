@@ -15,8 +15,11 @@ import { handleServerError } from "../../lib/error/handleServerError";
 import { authMiddleware } from "@/middlewares/api/auth";
 import { ZodArray, ZodObject } from "zod";
 import { Reply } from "@/services/reply";
+import { CLIENT_URL } from "@/config";
 
 export abstract class Route {
+  static readonly ALLOWED_METHODS: AllowedMethods[] = ["DELETE", "GET", "PATCH", "POST", "PUT"];
+
   private static exec = async (handler: Handler, req: ApiRequest, res: ApiResponse) => {
     if (handler.length >= 3) {
       const admin = await authMiddleware(req, res);
@@ -53,6 +56,17 @@ export abstract class Route {
   private static validateQuery(source: ApiRequest["query"], { param, query }: RequireAtLeastOne<{ param: ParamValidator; query: QueryValidator }>) {
     const validator = (param && query ? param.extend(query.shape) : query ? query : param) as QueryValidator & ParamValidator;
     return this.validatePayload(source, validator, "query");
+  }
+
+  private static cors({ reply }: ApiResponse, domain = CLIENT_URL!) {
+    reply.setHeader(
+      new Headers({
+        "Access-Control-Allow-Origin": domain,
+        "Access-Control-Allow-Methods": this.ALLOWED_METHODS.join(", "),
+        "Access-Control-Allow-Headers": "Content-Type",
+        "Access-Control-Allow-Credentials": "true",
+      })
+    );
   }
 
   /**
@@ -103,6 +117,9 @@ export abstract class Route {
       try {
         let { bodyValidator, paramValidator, queryValidator } = (options && options[req.method as BodyableMethods]) || {};
         const { paramValidator: globalParamValidator } = options || {};
+        if (options?.cors !== false) {
+          this.cors(res, typeof options?.cors === "string" ? options.cors : CLIENT_URL);
+        }
 
         if (bodyValidator) req.body = this.validatePayload(req.body, bodyValidator, "body");
 
