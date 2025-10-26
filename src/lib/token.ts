@@ -2,24 +2,25 @@ import jwt from "jsonwebtoken";
 import { JWT_ACCESS_SECRET, JWT_REFRESH_SECRET, NODE_ENV } from "@/config";
 import { timeInMs } from "./manipulate/number";
 import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
+import { SerializeOptions } from "cookie";
 
 export type JwtPayload = jwt.JwtPayload & { adminId: string; expires: Date };
 
-export const accessTokenConfig: Omit<ResponseCookie, "name" | "value"> = {
+export const accessTokenConfig: SerializeOptions = {
   httpOnly: true,
   secure: NODE_ENV === "production",
   sameSite: "strict",
   maxAge: timeInMs({ minute: 5 }),
 };
 
-export const refreshTokenConfig: Omit<ResponseCookie, "name" | "value"> = {
+export const refreshTokenConfig: SerializeOptions = {
   httpOnly: true,
   secure: NODE_ENV === "production",
   sameSite: "strict",
   maxAge: timeInMs({ week: 2 }),
 };
 
-export const refreshTokenSessionOnlyConfig: Omit<ResponseCookie, "name" | "value"> = {
+export const refreshTokenSessionOnlyConfig: SerializeOptions = {
   httpOnly: true,
   secure: NODE_ENV === "production",
   sameSite: "strict",

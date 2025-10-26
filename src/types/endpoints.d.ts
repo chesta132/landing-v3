@@ -1,4 +1,4 @@
-import { Replied } from "@/services/reply/type";
+import { Replied } from "@/services/reply/types";
 import { AllowedMethods, ApiRequest, ApiRequest_, ApiResponse, Handler } from "@/services/route/types";
 
 type DefaultRootEndpoint = Record<Lowercase<AllowedMethods>, never>;

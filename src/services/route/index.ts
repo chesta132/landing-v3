@@ -130,7 +130,7 @@ export abstract class Route {
           req.query = this.validateQuery(req.query, { param: paramValidator as ParamValidator, query: queryValidator });
         }
 
-        const handler = handlers[req.method as AllowedMethods];
+        const handler = handlers[req.method as AllowedMethods] || handlers.FALLBACK
         if (handler) return await this.exec(handler, req, res);
 
         return new ServerError("METHOD_NOT_ALLOWED", {

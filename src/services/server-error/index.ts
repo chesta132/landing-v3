@@ -1,6 +1,6 @@
 import { capital } from "@/lib/manipulate/string";
 import { Reply } from "../reply";
-import { Fields, RestError } from "../reply/type";
+import { Fields, RestError } from "../reply/types";
 import { AllowedMethods } from "@/services/route/types";
 
 export type ServerErrorConfig =

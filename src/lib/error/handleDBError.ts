@@ -1,5 +1,5 @@
 import { QueryConditionalConflict, QueryConditionalMissing, QueryError } from "@/services/db/type";
-import { Fields } from "@/services/reply/type";
+import { Fields } from "@/services/reply/types";
 import { ServerError } from "@/services/server-error";
 import { Prisma } from "@prisma/client";
 

@@ -21,7 +21,7 @@ export interface ApiResponse<Data = any> extends NextApiResponse<Data> {
 export type Handler = (req: ApiRequest<any & never>, res: ApiResponse<any>, admin: Admin) => Promise<void> | void;
 export type Recoverer = (err: unknown, req: ApiRequest<any & never>, res: ApiResponse<any>) => Promise<void> | void;
 
-export type Handlers = RequireAtLeastOne<Record<AllowedMethods, Handler>>;
+export type Handlers = RequireAtLeastOne<Record<AllowedMethods | "FALLBACK", Handler>>;
 
 export type BodyValidator = ZodObject | ZodArray<ZodObject>;
 export type QueryValidator = ZodObject;
@@ -31,7 +31,9 @@ export type CreateRouteOptionsBase = {
   queryValidator?: QueryValidator;
   paramValidator?: ParamValidator;
 };
-export type CreateRouteOptions<H extends Handlers> = Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>> & {
+export type CreateRouteOptions<H extends Handlers> = ("FALLBACK" extends keyof H
+  ? Partial<Record<BodyableMethods, CreateRouteOptionsBase>>
+  : Partial<Record<Extract<keyof H, BodyableMethods>, CreateRouteOptionsBase>>) & {
   recover?: Recoverer;
   paramValidator?: ParamValidator;
   /**

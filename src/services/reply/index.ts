@@ -4,10 +4,9 @@ import { omit, pick } from "@/lib/manipulate/object";
 import { CodeError } from "../server-error/type";
 import { NextApiRequest, NextApiResponse } from "next";
 import { ACCESS_TOKEN_EXPIRY, ACCESS_TOKEN_KEY, NODE_ENV, REFRESH_TOKEN_EXPIRY, REFRESH_TOKEN_KEY } from "@/config";
-import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./type";
+import { CookieUserBase, Replied, ErrorReplyType, ResType, ReplyOptions } from "./types";
 import { accessTokenConfig, refreshTokenConfig, refreshTokenSessionOnlyConfig } from "@/lib/token";
-import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
-import { serialize } from "cookie";
+import { serialize, SerializeOptions } from "cookie";
 
 const defaultPayload = <T>(): Replied<T> => ({ data: { code: "SERVER_ERROR", message: "Payload is empty." } as T, meta: { status: "ERROR" } });
 
@@ -35,9 +34,9 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
   private _jsonPayload: Replied<typeof this._body | typeof this._errorBody, boolean> = defaultPayload();
   private _res: NextApiResponse;
   private _req: NextApiRequest;
-
   private _cookie;
-  private _body?: SuccessType | SuccessType[];
+
+  private _body?: SuccessType;
   private _errorBody?: ErrorReplyType;
   private _accessToken?: string;
   private _refreshToken?: string;
@@ -51,17 +50,8 @@ export class Reply<SuccessType = unknown, SuccessReady extends boolean = false, 
     this._req = req;
     this._cookie = {
       get: (name: string) => ({ name, value: this._req.cookies[name] || "" }),
-      set: (name: string, value: string, options?: Omit<ResponseCookie, "name" | "value">) => {
-        const cookieString = serialize(name, value, {
-          path: options?.path || "/",
-          domain: options?.domain,
-          httpOnly: options?.httpOnly,
-          secure: options?.secure,
-          sameSite: options?.sameSite as any,
-          maxAge: options?.maxAge,
-          expires: options?.expires === undefined ? undefined : new Date(options?.expires),
-        });
-
+      set: (name: string, value: string, options?: SerializeOptions) => {
+        const cookieString = serialize(name, value, { path: "/", ...options });
         const existing = this._res.getHeader("Set-Cookie");
         const cookies = Array.isArray(existing) ? existing : existing ? [String(existing)] : [];
         this.setHeader("Set-Cookie", [...cookies, cookieString]);

@@ -1,5 +1,5 @@
+import { SerializeOptions } from "cookie";
 import { CodeError } from "../server-error/type";
-import { ResponseCookie } from "next/dist/compiled/@edge-runtime/cookies";
 
 // UNSETTED FIELDS ⚠️
 export type Fields = any;
@@ -55,7 +55,7 @@ export type CookieType<T = undefined> = EitherWithKeys<
   {
     template: "REFRESH" | "ACCESS" | "REFRESH_ACCESS";
   },
-  ResponseCookie
+  { value: string; name: string } & SerializeOptions
 > & { rememberMe?: boolean } & CookieUser<T>;
 
 export interface ReplyOptions<T = undefined> {
