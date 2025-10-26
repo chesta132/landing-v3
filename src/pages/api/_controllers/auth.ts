@@ -16,11 +16,11 @@ export type SigninResponse = { type: $Enums.AdminAuth; session: string };
 
 export abstract class AuthController {
   static readonly routeOptions = {
-    signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }).strip()  },
-    signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }).strip()  },
-    sigininByOtp: { bodyValidator: z.object({ otp: z.string(), session: z.string() }).strip()  },
-    signinByConfirm: { queryValidator: z.object({ session: z.string() }).strip()  },
-    confirmSignin: { queryValidator: z.object({ secret: z.string() }).strip()  },
+    signin: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean() }).strip() },
+    signup: { bodyValidator: z.object({ email: z.email(), password: z.string(), rememberMe: z.boolean(), name: z.string() }).strip() },
+    sigininByOtp: { bodyValidator: z.object({ otp: z.string(), session: z.string() }).strip() },
+    signinByConfirm: { queryValidator: z.object({ session: z.string() }).strip() },
+    confirmSignin: { queryValidator: z.object({ secret: z.string() }).strip() },
   } satisfies Record<string, CreateRouteOptionsBase>;
 
   static async signin(req: ApiRequest<AuthPayload.SigninBody, never, never>, { reply }: ApiResponse<SigninResponse>) {
@@ -59,6 +59,11 @@ export abstract class AuthController {
           }),
         },
       }
+    );
+    await crud.getOne(
+      prisma.admin,
+      { email },
+      { error: { found: new ServerError("CLIENT_FIELD", { field: "email", message: "Email already registered" }) } }
     );
 
     const pw = await AuthService.hashPassword(password);
