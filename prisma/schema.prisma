@@ -109,7 +109,7 @@ model Social {
 model Verification {
   id      String           @id @default(cuid())
   type    VerificationType
-  secret  String
+  secret  String           @unique
   expires DateTime
   info    String           @default("")
 
